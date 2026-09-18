@@ -32,8 +32,8 @@ export default function Workspace() {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-none border-b border-gray-300">
+    <div className="flex flex-col h-full">
+      <div className="flex border-b border-gray-300">
         <button
           className={`px-4 py-2 font-semibold ${activeTab === 'blocks' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
           onClick={() => handleTabClick('blocks')}
@@ -47,7 +47,7 @@ export default function Workspace() {
           Code
         </button>
       </div>
-      <div className="relative min-h-0 flex-1 bg-white p-4">
+      <div className="flex-grow p-4 bg-white" style={{ position: 'relative', height: 'calc(100% - 48px)' }}> {/* Adjust height to fit iframe */}
         <iframe
           ref={iframeRef}
           src="/blockly-app-embed.html"
