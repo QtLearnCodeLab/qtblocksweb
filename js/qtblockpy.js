@@ -75,7 +75,7 @@ QtBlockPy.init = function () {
 	var value = "None";
 	$('#boards option[value="' + value + '"]').attr('selected', 'selected').text();
 	$('#btn_stop').addClass("hidden");
-	$("#toggle").toggle("slide");
+	QtBlockPy.closeCodePreview();
 };
 QtBlockPy.loadFile = function () {
 	var urlFile = QtBlockPy.getStringParamFromUrl('url', '');
@@ -139,6 +139,23 @@ QtBlockPy.renderCodePreview = function () {
 		var code = Blockly.Python.workspaceToCode(Blockly.getMainWorkspace());
 		EDITOR.setCode(code);
 	}
+};
+QtBlockPy.toggleCodePreview = function (forceState) {
+	var $drawer = $('#toggle');
+	var willOpen = forceState !== undefined ? forceState : !$drawer.hasClass('is-open');
+	if (willOpen) {
+		$drawer.addClass('is-open');
+		$('#btn_preview').addClass('is-active');
+		$('#icon_handle_preview').text('chevron_right');
+		QtBlockPy.renderCodePreview();
+	} else {
+		$drawer.removeClass('is-open');
+		$('#btn_preview').removeClass('is-active');
+		$('#icon_handle_preview').text('chevron_left');
+	}
+};
+QtBlockPy.closeCodePreview = function () {
+	QtBlockPy.toggleCodePreview(false);
 };
 QtBlockPy.getStringParamFromUrl = function (name, defaultValue) {
 	var val = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
@@ -264,6 +281,8 @@ QtBlockPy.loadConfig = function () {
 			$('#btn_search').removeClass("hidden");
 			$('#btn_run_custom').removeClass("hidden");
 			$('#btn_stop_custom').addClass("hidden");
+			$('#btn_run').addClass("hidden");
+			$('#btn_stop').addClass("hidden");
 			$('#btn_save_custom_py').removeClass('hidden');
 			$('#btn_preview').addClass("hidden");
 
@@ -272,6 +291,8 @@ QtBlockPy.loadConfig = function () {
 			$('#btn_search').addClass("hidden");
 			$('#btn_run_custom').addClass("hidden");
 			$('#btn_stop_custom').addClass("hidden");
+			$('#btn_run').removeClass("hidden");
+			$('#btn_stop').addClass("hidden");
 			$('#btn_save_custom_py').addClass('hidden');
 		}
 	}
@@ -407,13 +428,16 @@ QtBlockPy.bindFunctions = function () {
 		QtBlockPy.selectedCard = $(this).val();
 	});
 	$('#btn_preview').on("click", function () {
-		$("#toggle").toggle("slide");
+		QtBlockPy.toggleCodePreview();
 		$('#btn_stop').addClass("hidden");
 		$('#btn_run').removeClass("hidden");
 		if (terminal_state == "open") {
 			$('#toggle_terminal').toggle("slide");
 			terminal_state = "close";
 		}
+	});
+	$('#btn_close_preview, #btn_handle_preview').on("click", function () {
+		QtBlockPy.closeCodePreview();
 	});
 	$('#btn_terminal').on("click", function () {
 		$('#toggle_terminal').toggle("slide");
@@ -489,8 +513,11 @@ QtBlockPy.bindFunctions = function () {
 			}
 
 			$('a[href="#content_code"]').tab('show');
+			QtBlockPy.closeCodePreview();
 			$('#btn_print').addClass("hidden");
 			$('#btn_preview').addClass("hidden");
+			$('#btn_run').addClass("hidden");
+			$('#btn_stop').addClass("hidden");
 			$('#btn_search').removeClass("hidden");
 			$('#btn_run_custom').removeClass("hidden");
 			$('#btn_save_custom_py').removeClass('hidden');
@@ -499,6 +526,7 @@ QtBlockPy.bindFunctions = function () {
 			$('a[href="#content_blocks"]').tab('show');
 			$('#btn_print').removeClass("hidden");
 			$('#btn_preview').removeClass("hidden");
+			$('#btn_run').removeClass("hidden");
 			$('#btn_search').addClass("hidden");
 			$('#btn_run_custom').addClass("hidden");
 			$('#btn_stop_custom').addClass("hidden");
@@ -797,9 +825,13 @@ QtBlockPy.copyTextToClipboard = function (text) {
 QtBlockPy.copy = function () {
 	var copyText = Blockly.Python.workspaceToCode(Blockly.getMainWorkspace());
 	QtBlockPy.copyTextToClipboard(copyText);
-	//navigator.clipboard.writeText(copyText);
-	alert('Copied');
-
+	var $feedback = $('#copy_feedback');
+	if ($feedback.length) {
+		$feedback.addClass('show');
+		setTimeout(function () {
+			$feedback.removeClass('show');
+		}, 1800);
+	}
 };
 
 QtBlockPy.webrepl_run = function () {

@@ -65,6 +65,7 @@
 	<link rel="stylesheet" type="text/css" href="css/qtblockpy.css" />
 	<link rel="stylesheet" type="text/css" href="css/tokens.css" />
 	<link rel="stylesheet" type="text/css" href="css/navbar.css" />
+	<link rel="stylesheet" type="text/css" href="css/preview-drawer.css" />
 	<link rel="stylesheet" type="text/css" href="css/prettify.min.css" />
 	<link rel="stylesheet" type="text/css" href="css/vex.css" />
 	<link rel="stylesheet" type="text/css" href="css/vex-theme-wireframe.css" />
@@ -163,8 +164,16 @@
 
 		<!-- Right: Run Actions, Code Preview & Utilities -->
 		<div class="navbar-right">
+			<!-- Run/Stop in Blocks mode -->
+			<button id="btn_run" class="btn btn-run" title="Run Blocks (Skulpt)">
+				<span class="material-icons">play_arrow</span> Run
+			</button>
+			<button id="btn_stop" class="btn btn-stop hidden" title="Stop Execution">
+				<span class="material-icons">stop</span> Stop
+			</button>
+
 			<!-- Run/Stop in Custom/Code mode -->
-			<button id="btn_run_custom" class="btn btn-run" title="Run Python Code (Skulpt)">
+			<button id="btn_run_custom" class="btn btn-run hidden" title="Run Python Code (Skulpt)">
 				<span class="material-icons">play_arrow</span> Run
 			</button>
 			<button id="btn_stop_custom" class="btn btn-stop hidden" title="Stop Code Execution">
@@ -206,25 +215,39 @@
 	</div>
 	<div id="divBody" class="tab-content">
 		<div role="tabpanel" id="content_blocks" class="tab-pane fade in active" style="position: relative;">
-			<div id="toggle" class="modal-content" style="display: none;">
-				<button id="btn_run" class="btn btn-default">
-					<span class="material-icons">play_arrow</span>
+			<!-- Modern Collapsible Code Preview Drawer (Inspector) -->
+			<div id="toggle" class="preview-drawer">
+				<!-- Collapsible Handle on left edge of drawer -->
+				<button id="btn_handle_preview" class="preview-drawer-handle" title="Collapse / Expand Preview">
+					<span class="material-icons" id="icon_handle_preview">chevron_right</span>
 				</button>
-				<button id="btn_stop" class="btn btn-default">
-					<span class="material-icons">stop</span>
-				</button>
-				<button id="btn_saveino" class="btn btn-default">
-					<span class="material-icons">save_alt</span>
-				</button>
-				<button id="btn_copy" class="btn btn-default">
-					<span class="material-icons">content_copy</span>
-				</button>
-				<pre id="pre_preview"></pre>
-				
-				
-			</div>
-			<div id="toggle" class="modal-content" style="display: none;">
-				<div id="myContainer"></div>
+
+				<!-- Drawer Header -->
+				<div class="preview-drawer-header">
+					<div class="preview-drawer-title-group">
+						<span class="material-icons preview-drawer-icon">code</span>
+						<span class="preview-drawer-title">Python Preview</span>
+						<span class="preview-drawer-live-badge"><span class="pulse-dot"></span> Live Sync</span>
+					</div>
+					<div class="preview-drawer-actions">
+						<button id="btn_copy" class="preview-drawer-btn" title="Copy Code to Clipboard">
+							<span class="material-icons">content_copy</span> Copy
+						</button>
+						<button id="btn_saveino" class="preview-drawer-btn" title="Download Python (.py)">
+							<span class="material-icons">save_alt</span> Save
+						</button>
+						<button id="btn_close_preview" class="preview-drawer-btn preview-drawer-btn-close" title="Collapse Preview">
+							<span class="material-icons">close</span>
+						</button>
+					</div>
+				</div>
+
+				<div id="copy_feedback" class="copy-feedback-toast">Copied to clipboard!</div>
+
+				<!-- Code Container -->
+				<div class="preview-drawer-body">
+					<pre id="pre_preview"></pre>
+				</div>
 			</div>
 
 			<div id="toggle_flash" class="modal-content" style="display: none;">

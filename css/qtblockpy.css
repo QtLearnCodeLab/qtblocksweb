@@ -193,15 +193,9 @@ body {
   position: absolute;
   padding-right: 100px;
 }
+/* Legacy #toggle floating box replaced by modern collapsible preview drawer in css/preview-drawer.css */
 #toggle {
-  width: 25%;
-  height: 75%;
-  position: absolute;
-  z-index: 1;
-  right: 5px;
-  top: 0px;
-  bottom: 80px;
-  opacity: 0.9;
+  display: none;
 }
 #toggle_terminal {
   width: 86.3%;
@@ -311,10 +305,7 @@ body {
   bottom: 5px;
   left: 5px;
 }
-#toggle pre {
-  height: 91%;
-  background-color: lightgrey;
-}
+
 #content_code pre {
   height: 100%;
 }
