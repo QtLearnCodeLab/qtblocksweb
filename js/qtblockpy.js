@@ -578,6 +578,9 @@ QtBlockPy.bindFunctions = function () {
 	$('#btn_config').on("click", QtBlockPy.openConfigToolbox);
 	$('#select_all').on("click", QtBlockPy.checkAll);
 	$('#btn_valid_config').on("click", QtBlockPy.changeToolbox);
+	$('#modal-body-config').on("change", 'input[type="checkbox"]', function () {
+		$(this).closest('.category-chip').toggleClass('is-checked', this.checked);
+	});
 	$('#btn_example').on("click", QtBlockPy.buildExamples);
 	//$('#btn_flash').on('click', QtBlockPy.flash);
 
@@ -590,11 +593,13 @@ QtBlockPy.checkAll = function () {
 	if (this.checked) {
 		$('#modal-body-config input:checkbox[id^=checkbox_]').each(function () {
 			this.checked = true;
+			$(this).closest('.category-chip').addClass('is-checked');
 		});
 	}
 	else {
 		$('#modal-body-config input:checkbox[id^=checkbox_]').each(function () {
 			this.checked = false;
+			$(this).closest('.category-chip').removeClass('is-checked');
 		});
 	}
 };
@@ -614,11 +619,11 @@ QtBlockPy.openConfigToolbox = function () {
 	var ligne = "";
 	$("#toolbox").children("category").each(function () {
 		n = loadIds.search($(this).attr("id"));
-		if (n >= 0) {
-			ligne = '<input type="checkbox" checked="checked" name="checkbox_' + i + '" id="checkbox_' + $(this).attr("id") + '"/> ' + Blockly.Msg[$(this).attr("id")] + '<br/>';
-		} else {
-			ligne = '<input type="checkbox" name="checkbox_' + i + '" id="checkbox_' + $(this).attr("id") + '"/> ' + Blockly.Msg[$(this).attr("id")] + '<br/>';
-		}
+		var isChecked = n >= 0 ? 'checked="checked"' : '';
+		var activeClass = n >= 0 ? ' is-checked' : '';
+		var catId = $(this).attr("id");
+		var labelText = Blockly.Msg[catId] || catId;
+		ligne = '<label class="category-chip' + activeClass + '"><input type="checkbox" ' + isChecked + ' name="checkbox_' + i + '" id="checkbox_' + catId + '"/> <span class="chip-label">' + labelText + '</span></label>';
 		i++;
 		modalbody.append(ligne);
 	});

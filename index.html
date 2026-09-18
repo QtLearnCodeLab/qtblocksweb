@@ -67,6 +67,7 @@
 	<link rel="stylesheet" type="text/css" href="css/navbar.css" />
 	<link rel="stylesheet" type="text/css" href="css/preview-drawer.css" />
 	<link rel="stylesheet" type="text/css" href="css/terminal-drawer.css" />
+	<link rel="stylesheet" type="text/css" href="css/modals.css" />
 	<link rel="stylesheet" type="text/css" href="css/prettify.min.css" />
 	<link rel="stylesheet" type="text/css" href="css/vex.css" />
 	<link rel="stylesheet" type="text/css" href="css/vex-theme-wireframe.css" />
@@ -401,23 +402,34 @@
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
+					<span class="fa fa-cog fa-2x modal-title" id="configModalLabel"></span>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-							aria-hidden="true">&#215;</span></button>
-					<span class="fa fa-cog fa-2x" class="modal-title" id="configModalLabel"></span>
+							aria-hidden="true">&times;</span></button>
 				</div>
-				<div class="modal-body">
-					<label id="span_languageMenu"></label>
-					<select id="languageMenu"></select><br><br>
-					<div id="divToolbox">
-						<label id="labelToolboxDefinition"></label>
-						<select id="toolboxes">
-							<option value="toolbox_basic">Beginner </option>
-							<option value="toolbox_python" >Intermediate </option>
-							<option value="toolbox_qt_neo" selected="selected">Advanced </option>
-						</select>
+				<div class="modal-body config-selectors-row">
+					<div class="config-field-group">
+						<label id="span_languageMenu" class="config-field-label">Language</label>
+						<div class="config-select-wrapper">
+							<select id="languageMenu" class="config-select"></select>
+						</div>
+					</div>
+					<div id="divToolbox" class="config-field-group">
+						<label id="labelToolboxDefinition" class="config-field-label">Level</label>
+						<div class="config-select-wrapper">
+							<select id="toolboxes" class="config-select">
+								<option value="toolbox_basic">Beginner</option>
+								<option value="toolbox_python">Intermediate</option>
+								<option value="toolbox_qt_neo" selected="selected">Advanced</option>
+							</select>
+						</div>
 					</div>
 				</div>
-				<input type="checkbox" name="select_all" id="select_all" /> <span id="span_select_all"> </span>
+				<div class="config-select-all-row">
+					<label class="config-select-all-label">
+						<input type="checkbox" name="select_all" id="select_all" />
+						<span id="span_select_all">Check all categories</span>
+					</label>
+				</div>
 				<div class="modal-body" id="modal-body-config"></div>
 				<div class="modal-footer">
 					<button id="btn_valid_config" type="button" class="btn btn-primary"></button>
