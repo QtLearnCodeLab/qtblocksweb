@@ -1,0 +1,344 @@
+/* ==========================================================================
+   QtBlocks Studio - Modern Navigation Bar & Header
+   Uses Design Tokens from tokens.css
+   ========================================================================== */
+
+#header.app-navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--navbar-height);
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-3);
+  z-index: 1000;
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+  user-select: none;
+}
+
+/* Ensure body starts exactly below navbar */
+#divBody {
+  position: absolute;
+  top: var(--navbar-height) !important;
+  bottom: 0px;
+  width: 100%;
+}
+
+/* Clear legacy fixed positioning */
+#header #title {
+  position: static !important;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  color: inherit;
+}
+
+#header #btn_all,
+#header #btn_group {
+  position: static !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- Navbar Sections (Flex Containers) --- */
+.navbar-left,
+.navbar-center,
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.navbar-left {
+  flex-shrink: 0;
+}
+
+.navbar-center {
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
+.navbar-right {
+  flex-shrink: 0;
+  gap: var(--space-2);
+}
+
+/* --- Brand Logo --- */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-right: var(--space-1);
+}
+
+.navbar-brand .brand-logo {
+  height: 28px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.brand-badge {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-brand);
+  background-color: var(--color-brand-light);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+/* --- Dividers --- */
+.nav-divider {
+  width: 1px;
+  height: 22px;
+  background-color: var(--border-subtle);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* --- Standard Nav Button Group --- */
+.btn-group-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* --- Modern Nav Buttons --- */
+.btn-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  outline: none !important;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+  box-sizing: border-box;
+}
+
+.btn-nav:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+.btn-nav:active {
+  background-color: var(--bg-active);
+  transform: translateY(1px);
+}
+
+.btn-nav .material-icons {
+  font-size: 18px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.btn-nav .fa {
+  font-size: 13px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* --- Attached Select Input Groups (Boards & Ports) --- */
+.nav-select-group {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  overflow: hidden;
+  height: 32px;
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--transition-fast);
+}
+
+.nav-select-group:hover,
+.nav-select-group:focus-within {
+  border-color: var(--border-default);
+}
+
+.nav-select-group .btn-nav-attached {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: var(--bg-muted);
+  border-right: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 0 9px;
+  height: 100%;
+}
+
+.nav-select-group .btn-nav-attached:hover {
+  background-color: var(--bg-active);
+  color: var(--text-primary);
+}
+
+.nav-select-group .nav-select {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  height: 100%;
+  padding: 0 10px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  cursor: pointer;
+  -webkit-appearance: menulist;
+}
+
+.nav-select-group .btn-nav-flash {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: var(--bg-muted);
+  border-left: 1px solid var(--border-subtle);
+  color: var(--color-brand);
+  padding: 0 10px;
+  height: 100%;
+  transition: all var(--transition-fast);
+}
+
+.nav-select-group .btn-nav-flash:hover {
+  background-color: var(--color-brand);
+  color: var(--text-inverse);
+}
+
+/* --- Mode Toggle Wrapper --- */
+.mode-toggle-wrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.mode-toggle-wrapper .toggle.nav-toggle {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--text-xs);
+  height: 32px !important;
+  min-height: 32px !important;
+  box-shadow: var(--shadow-xs);
+}
+
+.mode-toggle-wrapper .toggle-handle {
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --- Primary Execution Actions (Run & Stop) --- */
+.btn-run {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 14px;
+  background-color: var(--color-success) !important;
+  border: 1px solid var(--color-success-dark) !important;
+  border-radius: var(--radius-md);
+  color: var(--text-inverse) !important;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.25);
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.btn-run:hover {
+  background-color: var(--color-success-hover) !important;
+  box-shadow: 0 2px 5px rgba(16, 185, 129, 0.35);
+  transform: translateY(-0.5px);
+}
+
+.btn-run:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-xs);
+}
+
+.btn-run .material-icons {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.btn-stop {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 14px;
+  background-color: var(--color-danger) !important;
+  border: 1px solid var(--color-danger-hover) !important;
+  border-radius: var(--radius-md);
+  color: var(--text-inverse) !important;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.25);
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.btn-stop:hover {
+  background-color: var(--color-danger-hover) !important;
+  box-shadow: 0 2px 5px rgba(239, 68, 68, 0.35);
+}
+
+.btn-stop .material-icons {
+  font-size: 19px;
+  line-height: 1;
+}
+
+/* --- Code Preview Button --- */
+.btn-preview-toggle {
+  gap: 5px;
+  font-weight: 600;
+  padding: 0 11px;
+}
+
+.btn-preview-toggle .material-icons {
+  font-size: 17px;
+  color: var(--color-brand);
+}
+
+/* --- Status Hint Tooltip --- */
+.navbar-status-hint {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-subtle);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.navbar-status-hint:empty {
+  display: none;
+}

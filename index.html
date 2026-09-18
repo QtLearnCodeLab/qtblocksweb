@@ -63,6 +63,8 @@
 	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.3.3.6.css" />
 	<link rel="stylesheet" type="text/css" href="css/bootstrap.toggle.min.css" />
 	<link rel="stylesheet" type="text/css" href="css/qtblockpy.css" />
+	<link rel="stylesheet" type="text/css" href="css/tokens.css" />
+	<link rel="stylesheet" type="text/css" href="css/navbar.css" />
 	<link rel="stylesheet" type="text/css" href="css/prettify.min.css" />
 	<link rel="stylesheet" type="text/css" href="css/vex.css" />
 	<link rel="stylesheet" type="text/css" href="css/vex-theme-wireframe.css" />
@@ -71,115 +73,135 @@
 
 <body onload="QtBlockPy.init()">
 	<div class="loading"></div>
-	<div id="header">
-		<div id="title">
-			<span><img src="img/logo.png" style="width:120px; height:40px;" />
-
-			</span>
+	<div id="header" class="app-navbar">
+		<!-- Left: Brand Logo & File Operations -->
+		<div class="navbar-left">
+			<div id="title" class="navbar-brand">
+				<img src="img/logo.png" alt="QtPi Logo" class="brand-logo" />
+			</div>
+			<div class="nav-divider"></div>
+			<div class="btn-group-nav">
+				<button id="btn_new" class="btn btn-nav" title="New Project">
+					<span class="material-icons">create_new_folder</span>
+				</button>
+				<button id="btn_fakeload" class="btn btn-nav" title="Open / Load File (.xml, .py)">
+					<span class="material-icons">folder_open</span>
+				</button>
+				<input type="file" id="load" accept=".xml,.py" style="display: none;" />
+				<button id="btn_saveXML" class="btn btn-nav" title="Save XML">
+					<span class="material-icons">save</span>
+				</button>
+				<button id="btn_example" class="btn btn-nav" data-toggle="modal" data-target="#exampleModal" title="Examples">
+					<span class="material-icons">auto_stories</span>
+				</button>
+			</div>
+			<div class="nav-divider"></div>
+			<div class="btn-group-nav">
+				<button id="btn_undo" class="btn btn-nav" title="Undo">
+					<span class="fa fa-undo"></span>
+				</button>
+				<button id="btn_redo" class="btn btn-nav" title="Redo">
+					<span class="fa fa-repeat"></span>
+				</button>
+			</div>
 		</div>
-		<div id="btn_all">
+
+		<!-- Center: Mode Toggle & Target Hardware / Port -->
+		<div class="navbar-center">
 			<ul class="nav nav-tabs" role="tablist" style="display: none;">
 				<li role="presentation" class="active"><a href="#content_blocks" aria-controls="content_blocks"
 						role="tab" data-toggle="tab"></a></li>
 				<li role="presentation"><a href="#content_code" aria-controls="content_code" role="tab"
 						data-toggle="tab"></a></li>
 			</ul>
-			<span style="color:white;font-size:50"> || </span>
-			<input id="codeORblock" checked data-size="small" data-toggle="toggle"
-				data-on="<span class='fa fa-puzzle fa-2x' style='color:#727272'></span>"
-				data-off="<span class='fa fa-code fa-2x'></span>" data-style="ios" data-onstyle="default"
-				data-offstyle="default" type="checkbox">
 
-			<button id="btn_config" class="btn btn-arduino" data-toggle="modal" data-target="#configModal">
-				<span class="fa fa-cog fa-lg"></span>
-			</button>
-			<button id="btn_new" class="btn btn-arduino-rect">
-				<span class="material-icons">create</span>
-			</button>
+			<div class="mode-toggle-wrapper" title="Toggle Blocks / Python Code">
+				<input id="codeORblock" checked data-size="mini" data-toggle="toggle"
+					data-on="<span class='fa fa-puzzle fa-lg'></span> Blocks"
+					data-off="<span class='fa fa-code fa-lg'></span> Code" data-style="ios nav-toggle" data-onstyle="primary"
+					data-offstyle="info" type="checkbox">
+			</div>
 
-			<button id="btn_fakeload" class="btn btn-arduino-rect">
-				<!--<span class="fa fa-folder-open fa-lg fa-fw"></span>-->
-				<span class="material-icons">cloud_upload</span>
-			</button>
-			<button id="btn_example" class="btn btn-arduino-rect" data-toggle="modal" data-target="#exampleModal">
-				<span class="material-icons">
-					book
-				</span>
-			</button>
-			<input type="file" id="load" accept=".xml,.py" style="display: none;" />
-			<button id="btn_saveXML" class="btn btn-arduino-rect">
-				<span class="material-icons">cloud_download</span>
-			</button>
-			<button id="btn_print" class="btn btn-arduino-rect">
-				<span class="fa fa-camera fa-1_5x"> </span>
-			</button>
-			</button>
-			<button id="btn_undo" class="btn btn-arduino">
-				<span class="fa fa-undo fa-1_25x"> </span>
-			</button>
-			<button id="btn_redo" class="btn btn-arduino">
-				<span class="fa fa-repeat fa-1_25x"> </span>
-			</button>
-			<button id="btn_card" class="btn btn-arduino-rect" data-toggle="modal" data-target="#card"
-				style="margin-top: -2px; border-top-right-radius: 0px; border-bottom-right-radius: 0px;">
-				<span class="fa fa-microchip fa-fw"> </span>
-			</button>
-			<select
-				style="margin-left: -5px; height: 30px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-left-width: 0px;"
-				id="boards" onchange="QtBlockPy.change_card();">
-				<optgroup label="Python">
-					<option value="python">Python</option>
-				</optgroup>
-				<optgroup label="Boards">
-					<option value="qtneo" selected="selected">QtPi Neo</option>
-					<option value="microbit">Microbit</option>
-				</optgroup>
-				<optgroup label="Library">
-					<option value="streamlit">Streamlit</option>
-					<option value="qtpy">QtPy</option>
-				</optgroup>
-				<optgroup label="Javascript">
-					<option value="javascript">JavaScript</option>
-				</optgroup>
-			</select>
-			<button id="btn_usb" class="btn btn-arduino-rect" data-toggle="modal" data-target="#usb"
-				style="margin-top: -2px; border-top-right-radius: 0px; border-bottom-right-radius: 0px;">
-				<span class="fa fa-usb fa-fw"></span>
-			</button>
-			<select
-				style="margin-left: -5px; height: 30px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; border-left-width: 0px;"
-				id="portseries" onchange="QtBlockPy.save_com();">
-				<option value="none">None</option>
-			</select>
-			<button id="btn_flash" class='btn btn-arduino'>
-				<span class="fa fa-arrow-right fa-1_5x fa-fw"> </span>
-			</button>
-			<span id="survol" style="color:#fff"></span>
+			<div class="nav-divider"></div>
+
+			<!-- Board Selector Group -->
+			<div class="nav-select-group" title="Select Target Hardware">
+				<button id="btn_card" class="btn btn-nav btn-nav-attached" data-toggle="modal" data-target="#card" title="Board Details">
+					<span class="fa fa-microchip"></span>
+				</button>
+				<select id="boards" class="nav-select" onchange="QtBlockPy.change_card();">
+					<optgroup label="Python">
+						<option value="python">Python</option>
+					</optgroup>
+					<optgroup label="Boards">
+						<option value="qtneo" selected="selected">QtPi Neo</option>
+						<option value="microbit">Microbit</option>
+					</optgroup>
+					<optgroup label="Library">
+						<option value="streamlit">Streamlit</option>
+						<option value="qtpy">QtPy</option>
+					</optgroup>
+					<optgroup label="Javascript">
+						<option value="javascript">JavaScript</option>
+					</optgroup>
+				</select>
+			</div>
+
+			<!-- Port & Upload Group -->
+			<div class="nav-select-group" title="Serial Port & Upload">
+				<button id="btn_usb" class="btn btn-nav btn-nav-attached" data-toggle="modal" data-target="#usb" title="Port Settings">
+					<span class="fa fa-usb"></span>
+				</button>
+				<select id="portseries" class="nav-select" onchange="QtBlockPy.save_com();">
+					<option value="none">Port: None</option>
+				</select>
+				<button id="btn_flash" class="btn btn-nav btn-nav-flash" title="Upload to Board">
+					<span class="fa fa-arrow-right"></span>
+				</button>
+			</div>
 		</div>
-		<div id="btn_group" class="btn-group" role="group">
-			<button id="btn_search" class='btn btn-default'>
-				<span class="material-icons" style="font-size:19px;">search</span>
+
+		<!-- Right: Run Actions, Code Preview & Utilities -->
+		<div class="navbar-right">
+			<!-- Run/Stop in Custom/Code mode -->
+			<button id="btn_run_custom" class="btn btn-run" title="Run Python Code (Skulpt)">
+				<span class="material-icons">play_arrow</span> Run
 			</button>
-			<button id="btn_run_custom" class="btn btn-default">
-				<span class="material-icons" style="font-size:19px;">play_arrow</span>
+			<button id="btn_stop_custom" class="btn btn-stop hidden" title="Stop Code Execution">
+				<span class="material-icons">stop</span> Stop
 			</button>
-			<button id="btn_stop_custom" class="btn btn-default">
-				<span class="material-icons" style="font-size:19px;">stop</span>
+
+			<!-- Code Preview Toggle -->
+			<button id="btn_preview" class="btn btn-nav btn-preview-toggle" data-toggle="modal" title="Live Python Code Preview">
+				<span class="material-icons">code</span> Preview
 			</button>
-			<button id="btn_save_custom_py" class="btn btn-default">
-				<span class="material-icons" style="font-size:19px;">save_alt</span>
-			</button>
-			<button id="btn_api_mp" class="btn btn-default"
-				onclick="window.open('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html')">
-				<span class="material-icons" style="font-size:19px;">api</span>
-			</button>
-			<button id="btn_about" class="btn btn-default" data-toggle="modal" data-target="#aboutModal">
-				<span class="material-icons" style="font-size:19px;">school</span>
-			</button>
-			
-			<button id="btn_preview" class="btn btn-default" data-toggle="modal">
-				<span class="material-icons" style="font-size:19px;">preview</span>
-			</button>
+
+			<div class="nav-divider"></div>
+
+			<!-- Utilities -->
+			<div class="btn-group-nav">
+				<button id="btn_search" class="btn btn-nav hidden" title="Find / Replace">
+					<span class="material-icons">search</span>
+				</button>
+				<button id="btn_save_custom_py" class="btn btn-nav hidden" title="Save Python (.py)">
+					<span class="material-icons">save_alt</span>
+				</button>
+				<button id="btn_print" class="btn btn-nav" title="Snapshot Workspace">
+					<span class="fa fa-camera"></span>
+				</button>
+				<button id="btn_config" class="btn btn-nav" data-toggle="modal" data-target="#configModal" title="Toolbox Config">
+					<span class="fa fa-cog"></span>
+				</button>
+				<button id="btn_api_mp" class="btn btn-nav" title="QtPi API Documentation"
+					onclick="window.open('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html')">
+					<span class="material-icons">menu_book</span>
+				</button>
+				<button id="btn_about" class="btn btn-nav" data-toggle="modal" data-target="#aboutModal" title="About QtBlocks">
+					<span class="material-icons">help_outline</span>
+				</button>
+			</div>
+
+			<span id="survol" class="navbar-status-hint"></span>
 		</div>
 	</div>
 	<div id="divBody" class="tab-content">
