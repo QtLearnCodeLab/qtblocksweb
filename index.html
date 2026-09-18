@@ -66,6 +66,7 @@
 	<link rel="stylesheet" type="text/css" href="css/tokens.css" />
 	<link rel="stylesheet" type="text/css" href="css/navbar.css" />
 	<link rel="stylesheet" type="text/css" href="css/preview-drawer.css" />
+	<link rel="stylesheet" type="text/css" href="css/terminal-drawer.css" />
 	<link rel="stylesheet" type="text/css" href="css/prettify.min.css" />
 	<link rel="stylesheet" type="text/css" href="css/vex.css" />
 	<link rel="stylesheet" type="text/css" href="css/vex-theme-wireframe.css" />
@@ -325,8 +326,26 @@
 		<div role="tabpanel" id="content_code" class="tab-pane fade"></div>
 
 	</div>
-	<div id="toggle_terminal" class="modal-content" style="display: none;">
-		<pre id="console"></pre>
+	<!-- Modern Docked Bottom Terminal Drawer (Console Output) -->
+	<div id="toggle_terminal" class="terminal-drawer">
+		<div class="terminal-drawer-header">
+			<div class="terminal-drawer-title-group">
+				<span class="material-icons terminal-drawer-icon">terminal</span>
+				<span class="terminal-drawer-title">Console Output</span>
+				<span class="terminal-status-dot"></span>
+			</div>
+			<div class="terminal-drawer-actions">
+				<button id="btn_clear_terminal" class="terminal-btn" title="Clear Console">
+					<span class="material-icons">delete_sweep</span> Clear
+				</button>
+				<button id="btn_close_terminal" class="terminal-btn terminal-btn-close" title="Close Console">
+					<span class="material-icons">close</span>
+				</button>
+			</div>
+		</div>
+		<div class="terminal-drawer-body">
+			<pre id="console"></pre>
+		</div>
 	</div>
 
 	<!-- message modal -->

@@ -197,14 +197,9 @@ body {
 #toggle {
   display: none;
 }
+/* Legacy #toggle_terminal floating box replaced by modern docked bottom terminal drawer in css/terminal-drawer.css */
 #toggle_terminal {
-  width: 86.3%;
-  height: 24%;
-  position: absolute;
-  z-index: 1;
-  left: 13.7%;
-  bottom: 10px;
-  opacity: 0.9;
+  display: none;
 }
 #toggle_flash {
   position: absolute;

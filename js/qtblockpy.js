@@ -147,12 +147,14 @@ QtBlockPy.toggleCodePreview = function (forceState) {
 	var willOpen = forceState !== undefined ? forceState : !$drawer.hasClass('is-open');
 	if (willOpen) {
 		$drawer.addClass('is-open');
+		$('body').addClass('has-preview-open');
 		$('#btn_preview').addClass('is-active');
 		$('#icon_handle_preview').text('chevron_right');
 		$('#btn_handle_preview').attr('title', 'Collapse Code Preview');
 		QtBlockPy.renderCodePreview();
 	} else {
 		$drawer.removeClass('is-open');
+		$('body').removeClass('has-preview-open');
 		$('#btn_preview').removeClass('is-active');
 		$('#icon_handle_preview').text('chevron_left');
 		$('#btn_handle_preview').attr('title', 'Open Code Preview');
@@ -160,6 +162,22 @@ QtBlockPy.toggleCodePreview = function (forceState) {
 };
 QtBlockPy.closeCodePreview = function () {
 	QtBlockPy.toggleCodePreview(false);
+};
+QtBlockPy.openTerminalDrawer = function () {
+	$('#toggle_terminal').addClass('is-open');
+	terminal_state = "open";
+};
+QtBlockPy.closeTerminalDrawer = function () {
+	$('#toggle_terminal').removeClass('is-open');
+	terminal_state = "close";
+};
+QtBlockPy.toggleTerminalDrawer = function (forceState) {
+	var willOpen = forceState !== undefined ? forceState : !$('#toggle_terminal').hasClass('is-open');
+	if (willOpen) {
+		QtBlockPy.openTerminalDrawer();
+	} else {
+		QtBlockPy.closeTerminalDrawer();
+	}
 };
 QtBlockPy.getStringParamFromUrl = function (name, defaultValue) {
 	var val = location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
@@ -435,10 +453,6 @@ QtBlockPy.bindFunctions = function () {
 		QtBlockPy.toggleCodePreview();
 		$('#btn_stop').addClass("hidden");
 		$('#btn_run').removeClass("hidden");
-		if (terminal_state == "open") {
-			$('#toggle_terminal').toggle("slide");
-			terminal_state = "close";
-		}
 	});
 	$('#btn_handle_preview').on("click", function (e) {
 		e.preventDefault();
@@ -450,44 +464,33 @@ QtBlockPy.bindFunctions = function () {
 		e.stopPropagation();
 		QtBlockPy.closeCodePreview();
 	});
-	$('#btn_terminal').on("click", function () {
-		$('#toggle_terminal').toggle("slide");
-
+	$('#btn_clear_terminal').on("click", function (e) {
+		e.preventDefault();
+		$('#console').empty();
+	});
+	$('#btn_close_terminal, #btn_terminal').on("click", function (e) {
+		e.preventDefault();
+		QtBlockPy.closeTerminalDrawer();
 	});
 	$('#btn_stop').on("click", function () {
 		$('#btn_run').removeClass("hidden");
 		$('#btn_stop').addClass("hidden");
-		if (terminal_state == "open") {
-			$('#toggle_terminal').toggle("slide");
-			terminal_state = "close";
-		}
 	});
 	$('#btn_stop_custom').on("click", function () {
 		$('#btn_run_custom').removeClass("hidden");
 		$('#btn_stop_custom').addClass("hidden");
-		if (terminal_state == "open") {
-			$('#toggle_terminal').toggle("slide");
-			terminal_state = "close";
-		}
 	});
 	$('#btn_run').on("click", function () {
 		exe_type = "blocks";
 		$('#btn_stop').removeClass("hidden");
-		if (terminal_state == "close") {
-			$('#toggle_terminal').toggle("slide");
-			terminal_state = "open";
-		}
-		//	runit;
+		QtBlockPy.openTerminalDrawer();
 	});
 
 	//btn_run_custom
 	$('#btn_run_custom').on("click", function () {
 		exe_type = "custom";
 		$('#btn_stop_custom').removeClass("hidden");
-		if (terminal_state == "close") {
-			$('#toggle_terminal').toggle("slide");
-			terminal_state = "open";
-		}
+		QtBlockPy.openTerminalDrawer();
 	});
 	$('#btn_flash').on("click", function () {
 		if (com == "webrepl") {
@@ -1130,6 +1133,7 @@ function handle_put_file (file) {
 function outf (text) {
 	var mypre = document.getElementById("console");
 	mypre.innerHTML = mypre.innerHTML + text;
+	mypre.scrollTop = mypre.scrollHeight;
 }
 function builtinRead (x) {
 	if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)

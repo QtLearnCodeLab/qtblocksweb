@@ -1,0 +1,176 @@
+/* ==========================================================================
+   QtBlocks Studio - Docked Bottom Terminal Drawer (Console Output)
+   Option 1: Modern Bottom IDE Console, Zero Collision with Preview Drawer
+   ========================================================================== */
+
+#toggle_terminal.terminal-drawer {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 210px !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #0b1120 !important; /* Slate 950 deep editor black */
+  border: none !important;
+  border-top: 1px solid var(--border-subtle) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.18) !important;
+  z-index: 150 !important;
+  opacity: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1), right 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transform: translateY(100%) !important; /* Default collapsed below screen */
+  pointer-events: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Open state */
+#toggle_terminal.terminal-drawer.is-open {
+  transform: translateY(0) !important;
+  pointer-events: auto !important;
+}
+
+/* Zero collision: when right Python code drawer is open, push terminal left */
+body.has-preview-open #toggle_terminal.terminal-drawer {
+  right: 380px !important;
+}
+
+/* Terminal Header */
+.terminal-drawer-header {
+  height: 34px;
+  background-color: #0f172a; /* Slate 900 */
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-3);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.terminal-drawer-title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.terminal-drawer-icon {
+  color: var(--color-brand);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.terminal-drawer-title {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--slate-300);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.terminal-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
+}
+
+/* Terminal Actions (Clear & Close) */
+.terminal-drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.terminal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  background-color: transparent;
+  border: 1px solid #334155;
+  border-radius: var(--radius-xs);
+  color: var(--slate-400);
+  font-size: 11px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  outline: none !important;
+}
+
+.terminal-btn:hover {
+  background-color: #1e293b;
+  border-color: #475569;
+  color: var(--slate-200);
+}
+
+.terminal-btn .material-icons {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.terminal-btn-close {
+  padding: 0 5px;
+  border-color: transparent;
+}
+
+.terminal-btn-close:hover {
+  background-color: #ef444422;
+  border-color: transparent;
+  color: #f87171;
+}
+
+/* Terminal Body & Pre */
+.terminal-drawer-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #0b1120;
+  overflow: hidden;
+  position: relative;
+}
+
+#toggle_terminal pre#console {
+  margin: 0 !important;
+  padding: 10px 14px !important;
+  background: transparent !important;
+  color: #38bdf8 !important; /* Sky 400 */
+  font-family: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', Menlo, Monaco, Consolas, monospace !important;
+  font-size: 12.5px !important;
+  line-height: 1.6 !important;
+  height: 100% !important;
+  width: 100% !important;
+  border: none !important;
+  border-radius: 0 !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  box-sizing: border-box !important;
+  text-shadow: none !important;
+}
+
+#toggle_terminal pre#console::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+#toggle_terminal pre#console::-webkit-scrollbar-track {
+  background: #0b1120;
+}
+
+#toggle_terminal pre#console::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+
+#toggle_terminal pre#console::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
