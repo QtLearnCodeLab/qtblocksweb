@@ -1,9 +1,0 @@
-services:
-  qtblocks:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: ${QTPI_QTBLOCKS_IMAGE:-qtblocks-web:local}
-    ports:
-      - "${QTPI_QTBLOCKS_PORT:-8080}:80"
-    restart: unless-stopped
