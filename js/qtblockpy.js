@@ -130,10 +130,12 @@ QtBlockPy.renderCodePreview = function () {
 	var prog = window.localStorage.prog;
 	var card = window.localStorage.card;
 	if (card == "javascript") {
+		$('#preview_drawer_title').text('JavaScript');
 		$('#pre_preview').text(Blockly.JavaScript.workspaceToCode(QtBlockPy.workspace));
 		$('#pre_preview').html(prettyPrintOne($('#pre_preview').html(), 'js'));
 	}
 	else {
+		$('#preview_drawer_title').text('Python');
 		$('#pre_preview').text(Blockly.Python.workspaceToCode(QtBlockPy.workspace));
 		$('#pre_preview').html(prettyPrintOne($('#pre_preview').html(), 'py'));
 		var code = Blockly.Python.workspaceToCode(Blockly.getMainWorkspace());
