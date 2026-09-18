@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# SSL certificates
+letsencrypt/
+webroot/
+
+# Logs
+logs/
+
+# Dependencies and generated output
+**/node_modules/
+**/.next/
+**/out/
+**/coverage/
+graft/
+
+# Scripts
+*.sh
+
+# Documentation
+README.md
+*.md
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,230 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Blockly Editor</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.3.3.6.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.toggle.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/qtblockpy.css" />
+    <link rel="stylesheet" type="text/css" href="css/prettify.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/vex.css" />
+    <link rel="stylesheet" type="text/css" href="css/vex-theme-wireframe.css" />
+
+    <!-- JavaScript -->
+    <script type="text/javascript" src="js/jquery-2.2.4.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.toggle.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.3.3.6.js"></script>
+    <script type="text/javascript" src="js/prettify.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+    <script type="text/javascript" src="js/hexlify.js"></script>
+    <script type="text/javascript" src="js/intel-hex.browser.js"></script>
+    <script type="text/javascript" src="js/ace/src-min-noconflict/ace.js"></script>
+    <script type="text/javascript" src="js/ace/src-min-noconflict/ext-language_tools.js"></script>
+    <script src="js/acorn_interpreter.js"></script>
+    <script src="js/term.js"></script>
+    <script src="js/FileSaver.js"></script>
+    <script src="js/microbit/lzma-d.min.js"></script>
+    <script src="js/microbit/base64.js"></script>
+    <script src="js/p5.js/p5.min.js"></script>
+    <script src="js/prism/prism.js"></script>
+    <script src="js/microbit/microbit-fs.umd.min.js"></script>
+    <script src="lang/en.js" id="lang"></script>
+    <script src="js/microbit/micropythonapi.js"></script>
+    <script src="js/microbit/FileSaver.min.js" type="application/javascript"></script>
+    <script src="js/microbit/vex.combined.min.js" type="application/javascript"></script>
+    <script>vex.defaultOptions.className = 'vex-theme-wireframe';</script>
+
+    <!-- Blockly and QtBlockPy specific scripts -->
+    <script type="text/javascript" src="js/skulpt/skulpt.min.js"></script>
+    <script type="text/javascript" src="js/skulpt/skulpt-stdlib.js"></script>
+    <script type="text/javascript" src="js/blockly/blockly_compressed.js"></script>
+    <script type="text/javascript" src="js/blockly/blocks_compressed.js"></script>
+    <script type="text/javascript" src="js/blockly/python_compressed.js"></script>
+    <script type="text/javascript" src="js/blockly/javascript_compressed.js"></script>
+    <script type="text/javascript" src="js/boards.js"></script>
+    <script type="text/javascript" src="js/code.js"></script>
+    <script type="text/javascript" src="js/qtblockpy.js"></script>
+
+    <script type="application/javascript">
+        // VERSION INFORMATION
+        EDITOR_VERSION = "2.0.0";
+        UPY_VERSION = "1.0.1";
+
+    </script>
+
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #content_blocks, #editor_microbit {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #content_code {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none; /* Hidden by default */
+        }
+    </style>
+</head>
+<body>
+    <div id="content_blocks" style="display: block;"></div>
+    <div id="editor_microbit" style="display: none;"></div>
+    <div id="content_code" style="display: none;"></div>
+
+    <!-- Terminal and other modals/elements that might be needed by qtblockpy.js -->
+    <div id="toggle_terminal" class="modal-content" style="display: none;">
+        <pre id="console"></pre>
+    </div>
+    <div id="message" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div id="messageDIV"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="aboutModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+                    <span class="fa fa-2x" class="modal-title" id="aboutModalLabel"></span>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-4"><img src="img/logo.png" /></div>
+                            <div class="col-md-8">
+                                <span class="fa fa-lg" id="versionapp"></span>
+                                <span id="aboutBody"></span><br /><br />
+                                <button id="btn_site" class="btn btn-default" onclick="window.open('https://qtpi.in/')">
+                                    <span class="fa fa-search" id="span_site"></span>
+                                </button>
+                                <button id="btn_contact" class="btn btn-default" onclick="window.open('https://qtpi.in/#contact')">
+                                    <span class='fa fa-envelope' id="span_contact"></span>
+                                </button>
+                                <button id="btn_api_mp" class="btn btn-default" onclick="window.open('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html')">
+                                    <span class='fa fa-hand-o-right'>API Doc</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="configModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="configModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&#215;</span></button>
+                    <span class="fa fa-cog fa-2x" class="modal-title" id="configModalLabel"></span>
+                </div>
+                <div class="modal-body">
+                    <label id="span_languageMenu"></label>
+                    <select id="languageMenu"></select><br><br>
+                    <div id="divToolbox">
+                        <label id="labelToolboxDefinition"></label>
+                        <select id="toolboxes">
+                            <option value="toolbox_basic">Beginner </option>
+                            <option value="toolbox_python" >Intermediate </option>
+                            <option value="toolbox_qt_neo" selected="selected">Advanced </option>
+                        </select>
+                    </div>
+                </div>
+                <input type="checkbox" name="select_all" id="select_all" /> <span id="span_select_all"> </span>
+                <div class="modal-body" id="modal-body-config"></div>
+                <div class="modal-footer">
+                    <button id="btn_valid_config" type="button" class="btn btn-primary"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="exampleModal" class="modal fade">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&#215;</span></button>
+                    <span class="fa fa-file-text fa-2x" class="modal-title" id="exampleModalLabel"></span>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <tbody id="includedContent"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="usb" class="modal fade">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <span id="aboutusbLabel"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="firmware" style="display: none;"></div> <!-- Firmware content was very long, truncated for brevity -->
+
+    <script type="text/javascript">
+        // This script will run after all other scripts in the head
+        // and after the DOM elements are available.
+        // It will initialize the Ace editor and Blockly workspace.
+
+        // QtBlockPy's change listener writes generated code through EDITOR, so
+        // initialize the full editor wrapper before starting Blockly.
+        if (window.ace && typeof window.pythonEditor === 'function') {
+            window.EDITOR = window.pythonEditor('editor_microbit', {});
+            window.editor = window.ace.edit('editor_microbit');
+            console.log('Python editor initialized in iframe');
+        }
+
+        // Initialize Blockly
+        if (window.Blockly && window.QtBlockPy) {
+            // QtBlockPy.init() expects 'content_blocks' to be present
+            // and will inject Blockly into it.
+            window.QtBlockPy.init();
+            console.log('QtBlockPy.init() called in iframe');
+        }
+
+        // Listen for messages from the parent (Next.js)
+        window.addEventListener('message', (event) => {
+            if (event.origin !== window.location.origin) { // Ensure message is from same origin
+                return;
+            }
+            const { type, payload } = event.data;
+            if (type === 'SET_ACTIVE_TAB') {
+                // Handle tab switching
+                if (payload === 'blocks') {
+                    document.getElementById('content_blocks').style.display = 'block';
+                    document.getElementById('editor_microbit').style.display = 'none';
+                    document.getElementById('content_code').style.display = 'none';
+                    if (window.Blockly && window.Blockly.svgResize) {
+                        window.Blockly.svgResize(window.QtBlockPy.workspace);
+                    }
+                } else if (payload === 'code') {
+                    document.getElementById('content_blocks').style.display = 'none';
+                    document.getElementById('editor_microbit').style.display = 'block';
+                    document.getElementById('content_code').style.display = 'block';
+                    if (window.editor) {
+                        window.editor.resize(); // Resize Ace editor if it's visible
+                    }
+                }
+            }
+        });
+
+        // Send a message to the parent when the iframe is ready
+        window.parent.postMessage({ type: 'IFRAME_READY' }, window.location.origin);
+    </script>
+</body>
+</html>

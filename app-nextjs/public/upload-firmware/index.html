@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>QTPI ESP Web Tool</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      // Redirect to HTTPS if HTTP is requested.
+      if (
+        window.location.hostname !== "localhost" &&
+        window.location.protocol === "http:"
+      ) {
+        window.location.href = "https:" + window.location.href.substring(5);
+      }
+    </script>
+
+    <!-- import the web page's stylesheets along with the themes -->
+    <link rel="stylesheet" href="https://use.typekit.net/qtk5kiq.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="css/light.css"
+      id="light"
+      class="alternate"
+      disabled
+    />
+    <link
+      rel="stylesheet"
+      href="css/dark.css"
+      id="dark"
+      class="alternate"
+      disabled
+    />
+
+    <!-- import the webpage's javascript file -->
+    <script module>
+      window.esptoolPackage = import(
+        // In development we import locally.
+        window.location.hostname === "localhost"
+          ? "/dist/web/index.js"
+          : "https://cdn.jsdelivr.net/gh/adafruit/Adafruit_WebSerial_ESPTool@latest/dist/web/index.js"
+      );
+    </script>
+    <script src="js/script.js" module defer></script>
+  </head>
+  <body>
+    <header class="header">
+      <div class="left">
+        <img src="assets/qtpi_logo.jpeg" class="Logo">
+      </div>
+      <div class="right">
+        <select id="baudRate"></select>
+        <button id="butConnect" type="button">Connect</button>
+      </div>
+    </header>
+    <main class="main">
+      <div id="notSupported" class="notSupported">
+      </div>
+      <div class="subheader">
+        <div class="title left">QTPI ESP Web Tool</div>
+        <div class="right">
+          <label for="darkmode"> Dark Mode </label>
+          <div class="onoffswitch">
+            <input
+              type="checkbox"
+              name="darkmode"
+              class="onoffswitch-checkbox"
+              id="darkmode"
+            />
+            <label class="onoffswitch-label" for="darkmode">
+              <span class="onoffswitch-inner"></span>
+              <span class="onoffswitch-switch"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div id="app">
+        <div id="commands">
+          <div class="upload">
+            <label
+              >Offset: 0x
+              <input class="offset" type="text" value="1000" />
+            </label>
+            <label class="firmware">
+              <input type="file" accept=".bin" />
+              <span>Choose a file&hellip;</span>
+            </label>
+            <div class="progress-bar hidden"><div></div></div>
+          </div>
+          <div class="upload">
+            <label
+              >Offset: 0x
+              <input class="offset" type="text" value="610000" />
+            </label>
+            <label class="firmware">
+              <input type="file" accept=".bin" />
+              </svg>
+              <span>Choose a file&hellip;</span>
+            </label>
+            <div class="progress-bar hidden"><div></div></div>
+          </div>
+          <div class="upload" style="display: none;">
+            <label
+              >Offset: 0x
+              <input class="offset" type="text" value="0" />
+            </label>
+            <label class="firmware">
+              <input type="file" accept=".bin" />
+              <span>Choose a file&hellip;</span>
+            </label>
+            <div class="progress-bar hidden"><div></div></div>
+          </div>
+          <div class="upload" style="display: none;">
+            <label
+              >Offset: 0x
+              <input class="offset" type="text" value="0" />
+            </label>
+            <label class="firmware">
+              <input type="file" accept=".bin" />
+              <span>Choose a file&hellip;</span>
+            </label>
+            <div class="progress-bar hidden"><div></div></div>
+          </div>
+          <div class="buttons">
+            <button id="butErase" type="button" disabled="disabled" style="display: none;">
+              Erase
+            </button>
+            <button id="butProgram" type="button">
+              Program
+            </button>
+          </div>
+        </div>
+        <div id="log"></div>
+      </div>
+    </main>
+    <footer class="footer">
+      <div class="justify controls">
+        <div>
+          <label for="autoscroll">Autoscroll </label>
+          <div class="onoffswitch">
+            <input
+              type="checkbox"
+              name="autoscroll"
+              class="onoffswitch-checkbox"
+              id="autoscroll"
+            />
+            <label class="onoffswitch-label" for="autoscroll">
+              <span class="onoffswitch-inner"></span>
+              <span class="onoffswitch-switch"></span>
+            </label>
+          </div>
+        </div>
+        <button id="butClear" type="button">Clear Text</button>
+      </div>
+    </footer>
+  </body>
+</html>

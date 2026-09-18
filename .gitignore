@@ -103,6 +103,8 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
 .venv
 env/
 venv/
@@ -129,3 +131,13 @@ dmypy.json
 .pyre/
 .vscode/
 node_modules
+.next/
+out/
+coverage/
+logs/
+letsencrypt/
+webroot/
+startup-script.sh
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

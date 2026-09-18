@@ -1,0 +1,531 @@
+<!doctype html>
+<html>
+<head>
+<title>MicroPython WebREPL</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<!--
+  term.js
+  Copyright (c) 2012-2013, Christopher Jeffrey (MIT License)
+  Copyright (c) 2016, Paul Sokolovsky
+-->
+<style>
+  html {
+    background-color:rgb(213,233,221);
+  }
+
+  .title-bar{
+    justify-content: center;
+    align-items: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    display:flex;
+}
+
+  h1 {
+    padding:5px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Georgia,serif;
+    font-size:25px;
+    font-weight:600;
+  }
+/*
+  .terminal {
+    float: left;
+    border: #000 solid 5px;
+    font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+    font-size: 15px;
+    color: #f0f0f0;
+    background: rgba(25, 25, 40, 1);
+  }
+
+  .terminal-cursor {
+    color: #000;
+    background: #f0f0f0;
+  }
+*/
+.file-design {
+  margin: 4px;
+  padding: 4px;
+  border-radius: 5px;
+  border-color: rgb(50,50,50);
+  border-style: solid;
+  border-width: 1px;
+}
+.form-class{
+  display:flex;
+}
+.file-box {
+  margin: 4px;
+  padding: 4px;
+  background: rgba(212, 253, 230,1);
+  border-radius: 5px;
+  border-color: rgba(0,0,0,0);
+  border-color: rgb(50,50,50);
+  border-style: solid;
+  border-width: 1px;
+}
+.file-boxes {
+  margin: 4px;
+  padding: 4px;
+  display:inline-block;
+  vertical-align: top;
+}
+
+@media (max-width:480px) {
+  .file-boxes {
+    display: flex;
+    flex-direction:column;
+  }
+}
+
+</style>
+<script src="term.js"></script>
+<script src="FileSaver.js"></script>
+</head>
+<body>
+  <!--  title  -->
+  <div class="title-bar">
+    <h1 class="gjs-heading" id="il3x">QTpi ESP32 Web Terminal</h1>
+  </div>
+  
+  <!--  ip address  -->
+  <div>
+    <form class="form-class">
+      <input style="margin-left: 60px ;" type="text" class="file-design" name="webrepl_url" id="url" value="ws://192.168.4.1:8266/" />
+      <input type="submit" class="file-design" id="button" value="Connect" onclick="button_click(); return false;" />
+    </form>
+  </div>
+   
+   <!--  terminal  -->
+  <div style="display:inline-block; vertical-align:top;">
+    <div id="term" class="term-box">
+    </div>
+  </div>
+    
+    <!--  file handling  -->
+  <div id="file-boxes" class="file-boxes">
+    
+    <!--  auto password  -->
+    <div class="file-box">
+      <strong style="margin:5px;margin-right:15px;">Password</strong>
+      <input type="button" style="width: 80px;" class="file-design" value="Send" id="auto-password-button" onclick="autoPassword(); return false;" />
+    </div>
+
+    <!--  typer  -->
+    <div class="file-box">
+      <strong style="display:flex;margin:5px;">Type your commands in the box</strong>
+      <input type="text" class="file-design" name="get_code" id="get_code" placeholder="Enter code" />
+      <input type="button" style="width: 80px;" class="file-design" value="Send" onclick="sendCode(); return false;" />
+    </div>
+
+    <!--  send file  -->
+    <div class="file-box">
+      <strong style="display:flex;margin:5px;">Send a file</strong>
+      <input type="file" style="margin: 4px;padding: 4px;" id="put-file-select" />
+      <div id="put-file-list" style="margin: 4px;padding: 4px;"></div>
+      <input type="button" class="file-design" value="Send to device" id="put-file-button" onclick="put_file(); return false;" />
+    </div>
+
+    <!--  get file  -->
+    <div class="file-box">
+      <strong style="display:flex;margin:5px;">Get a file from the device</strong>
+      <input type="text" class="file-design" name="get_filename" id="get_filename" placeholder="Enter file name" />
+      <input type="button" style="width: 80px;" class="file-design" value="Get file" onclick="get_file(); return false;" />
+    </div>
+
+    <!--  file status  -->
+    <div class="file-box" id="file-status">
+      <span style="color:#707070">(file operation status)</span>
+    </div>
+
+    <!--  update file  -->
+    <div class="file-box">
+      <strong style="margin:5px;margin-right:15px;">Files Update</strong>
+      <input type="button" style="width: 80px;" class="file-design" value="Update" id="update-files-button" onclick="updateFiles(); return false;" />
+    </div>
+
+    <!--  clear screen  -->
+    <div class="file-box">
+      <strong style="margin:5px;margin-right:15px;">Clear Screen</strong>
+      <input type="button" style="width: 80px;" class="file-design" value="Clear" id="clear-screen-button" onclick="clearScreen(); return false;" />
+    </div>
+
+    <!--  run/stop file  -->
+    <div class="file-box">
+      <strong style="display:flex;margin:5px;">Run File</strong>
+      <input type="text" class="file-design" id="file-name" placeholder="Enter file name">
+      <input type="button" style="width: 50px;" class="file-design" value="Run" onclick="executeFile(); return false;" />
+      <input type="button" style="width: 50px;" class="file-design" value="Stop" id="stop-button" onclick="sendCtrlC(); return false;" />
+    </div>
+
+    <!--  delete file  -->
+    <div class="file-box">
+      <strong style="display:flex;margin:5px;">Delete File</strong>
+      <input type="text" class="file-design" id="file-name-delete" placeholder="Enter file name to delete">
+      <input type="button" style="width: 80px;" class="file-design" value="Delete" onclick="confirmDeleteFile(); return false;"/>
+    </div>
+
+    
+
+</div>
+
+<br clear="both" />
+<i>Terminal widget should be focused (text cursor visible) to accept input. Click on it if not.</i><br/>
+<i>To paste, press Ctrl+A, then Ctrl+V</i>
+
+</body>
+
+<script>
+
+var term;
+var ws;
+var connected = false;
+var binary_state = 0;
+var put_file_name = null;
+var put_file_data = null;
+var get_file_name = null;
+var get_file_data = null;
+
+function calculate_size(win) {
+    var isAndroid = /android/i.test(navigator.userAgent);
+     var isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    if (isAndroid) {
+        // Set width and height to 300 for Android phones
+        return [40, 20];
+    } else if (isiOS) {
+        // Set width and height to 300 for iOS devices
+        return [40, 20];
+    } else {
+        // Calculate cols and rows based on window dimensions for other devices
+        var cols = Math.max(80, Math.min(150, (win.innerWidth - 700) / 7)) | 0;
+        var rows = Math.max(24, Math.min(80, (win.innerHeight - 500) / 12)) | 0;   
+        return [cols, rows];
+    }
+}
+
+(function() {
+    window.onload = function() {
+      var size = calculate_size(self);
+      term = new Terminal({
+        cols: size[0],
+        rows: size[1],
+        useStyle: true,
+        screenKeys: true,
+        cursorBlink: false
+      });
+      term.open(document.getElementById("term"));
+      show_https_warning();
+    };
+    window.addEventListener('resize', function() {
+        var size = calculate_size(self);
+        term.resize(size[0], size[1]);
+    });
+}).call(this);
+
+function show_https_warning() {
+    if (window.location.protocol == 'https:') {
+        var warningDiv = document.createElement('div');
+        warningDiv.style.cssText = 'background:#f99;padding:5px;margin-bottom:10px;line-height:1.5em;text-align:center';
+        warningDiv.innerHTML = [
+            'At this time, the WebREPL client cannot be accessed over HTTPS connections.',
+            'Use a HTTP connection, eg. <a href="http://micropython.org/webrepl/">http://micropython.org/webrepl/</a>.',
+            'Alternatively, download the files from <a href="https://github.com/micropython/webrepl">GitHub</a> and run them locally.'
+        ].join('<br>');
+        document.body.insertBefore(warningDiv, document.body.childNodes[0]);
+        term.resize(term.cols, term.rows - 7);
+    }
+}
+
+function button_click() {
+    if (connected) {
+        ws.close();
+    } else {
+        document.getElementById('url').disabled = true;
+        document.getElementById('button').value = "Disconnect";
+        connected = true;
+        connect(document.getElementById('url').value);
+    }
+}
+
+function prepare_for_connect() {
+    document.getElementById('url').disabled = false;
+    document.getElementById('button').value = "Connect";
+}
+
+function update_file_status(s) {
+    document.getElementById('file-status').innerHTML = s;
+}
+
+function connect(url) {
+    ws = new WebSocket(url);
+    ws.binaryType = 'arraybuffer';
+    ws.onopen = function() {
+        term.removeAllListeners('data');
+        term.on('data', function(data) {
+            // Pasted data from clipboard will likely contain
+            // LF as EOL chars.
+            data = data.replace(/\n/g, "\r");
+            ws.send(data);
+        });
+
+        term.on('title', function(title) {
+            document.title = title;
+        });
+
+        term.focus();
+        term.element.focus();
+        term.write('\x1b[31mWelcome to MicroPython!\x1b[m\r\n');
+
+        ws.onmessage = function(event) {
+            if (event.data instanceof ArrayBuffer) {
+                var data = new Uint8Array(event.data);
+                switch (binary_state) {
+                    case 11:
+                        // first response for put
+                        if (decode_resp(data) == 0) {
+                            // send file data in chunks
+                            for (var offset = 0; offset < put_file_data.length; offset += 1024) {
+                                ws.send(put_file_data.slice(offset, offset + 1024));
+                            }
+                            binary_state = 12;
+                        }
+                        break;
+                    case 12:
+                        // final response for put
+                        if (decode_resp(data) == 0) {
+                            update_file_status('Sent ' + put_file_name + ', ' + put_file_data.length + ' bytes');
+                        } else {
+                            update_file_status('Failed sending ' + put_file_name);
+                        }
+                        binary_state = 0;
+                        break;
+
+                    case 21:
+                        // first response for get
+                        if (decode_resp(data) == 0) {
+                            binary_state = 22;
+                            var rec = new Uint8Array(1);
+                            rec[0] = 0;
+                            ws.send(rec);
+                        }
+                        break;
+                    case 22: {
+                        // file data
+                        var sz = data[0] | (data[1] << 8);
+                        if (data.length == 2 + sz) {
+                            // we assume that the data comes in single chunks
+                            if (sz == 0) {
+                                // end of file
+                                binary_state = 23;
+                            } else {
+                                // accumulate incoming data to get_file_data
+                                var new_buf = new Uint8Array(get_file_data.length + sz);
+                                new_buf.set(get_file_data);
+                                new_buf.set(data.slice(2), get_file_data.length);
+                                get_file_data = new_buf;
+                                update_file_status('Getting ' + get_file_name + ', ' + get_file_data.length + ' bytes');
+
+                                var rec = new Uint8Array(1);
+                                rec[0] = 0;
+                                ws.send(rec);
+                            }
+                        } else {
+                            binary_state = 0;
+                        }
+                        break;
+                    }
+                    case 23:
+                        // final response
+                        if (decode_resp(data) == 0) {
+                            update_file_status('Got ' + get_file_name + ', ' + get_file_data.length + ' bytes');
+                            saveAs(new Blob([get_file_data], {type: "application/octet-stream"}), get_file_name);
+                        } else {
+                            update_file_status('Failed getting ' + get_file_name);
+                        }
+                        binary_state = 0;
+                        break;
+                    case 31:
+                        // first (and last) response for GET_VER
+                        console.log('GET_VER', data);
+                        binary_state = 0;
+                        break;
+                }
+            }
+            term.write(event.data);
+        };
+    };
+
+    ws.onclose = function() {
+        connected = false;
+        if (term) {
+            term.write('\x1b[31mDisconnected\x1b[m\r\n');
+        }
+        term.off('data');
+        prepare_for_connect();
+    }
+}
+
+function decode_resp(data) {
+    if (data[0] == 'W'.charCodeAt(0) && data[1] == 'B'.charCodeAt(0)) {
+        var code = data[2] | (data[3] << 8);
+        return code;
+    } else {
+        return -1;
+    }
+}
+
+function put_file() {
+    var dest_fname = put_file_name;
+    var dest_fsize = put_file_data.length;
+
+    // WEBREPL_FILE = "<2sBBQLH64s"
+    var rec = new Uint8Array(2 + 1 + 1 + 8 + 4 + 2 + 64);
+    rec[0] = 'W'.charCodeAt(0);
+    rec[1] = 'A'.charCodeAt(0);
+    rec[2] = 1; // put
+    rec[3] = 0;
+    rec[4] = 0; rec[5] = 0; rec[6] = 0; rec[7] = 0; rec[8] = 0; rec[9] = 0; rec[10] = 0; rec[11] = 0;
+    rec[12] = dest_fsize & 0xff; rec[13] = (dest_fsize >> 8) & 0xff; rec[14] = (dest_fsize >> 16) & 0xff; rec[15] = (dest_fsize >> 24) & 0xff;
+    rec[16] = dest_fname.length & 0xff; rec[17] = (dest_fname.length >> 8) & 0xff;
+    for (var i = 0; i < 64; ++i) {
+        if (i < dest_fname.length) {
+            rec[18 + i] = dest_fname.charCodeAt(i);
+        } else {
+            rec[18 + i] = 0;
+        }
+    }
+
+    // initiate put
+    binary_state = 11;
+    update_file_status('Sending ' + put_file_name + '...');
+    ws.send(rec);
+}
+
+function get_file() {
+    var src_fname = document.getElementById('get_filename').value;
+
+    ws.send('import os\nos.listdir()');
+
+    // WEBREPL_FILE = "<2sBBQLH64s"
+    var rec = new Uint8Array(2 + 1 + 1 + 8 + 4 + 2 + 64);
+    rec[0] = 'W'.charCodeAt(0);
+    rec[1] = 'A'.charCodeAt(0);
+    rec[2] = 2; // get
+    rec[3] = 0;
+    rec[4] = 0; rec[5] = 0; rec[6] = 0; rec[7] = 0; rec[8] = 0; rec[9] = 0; rec[10] = 0; rec[11] = 0;
+    rec[12] = 0; rec[13] = 0; rec[14] = 0; rec[15] = 0;
+    rec[16] = src_fname.length & 0xff; rec[17] = (src_fname.length >> 8) & 0xff;
+    for (var i = 0; i < 64; ++i) {
+        if (i < src_fname.length) {
+            rec[18 + i] = src_fname.charCodeAt(i);
+        } else {
+            rec[18 + i] = 0;
+        }
+    }
+
+    // initiate get
+    binary_state = 21;
+    get_file_name = src_fname;
+    get_file_data = new Uint8Array(0);
+    update_file_status('Getting ' + get_file_name + '...');
+    ws.send(rec);
+}
+
+function get_ver() {
+    // WEBREPL_REQ_S = "<2sBBQLH64s"
+    var rec = new Uint8Array(2 + 1 + 1 + 8 + 4 + 2 + 64);
+    rec[0] = 'W'.charCodeAt(0);
+    rec[1] = 'A'.charCodeAt(0);
+    rec[2] = 3; // GET_VER
+    // rest of "rec" is zero
+
+    // initiate GET_VER
+    binary_state = 31;
+    ws.send(rec);
+}
+
+function handle_put_file_select(evt) {
+    // The event holds a FileList object which is a list of File objects,
+    // but we only support single file selection at the moment.
+    var files = evt.target.files;
+
+    // Get the file info and load its data.
+    var f = files[0];
+    put_file_name = f.name;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        put_file_data = new Uint8Array(e.target.result);
+        document.getElementById('put-file-list').innerHTML = '' + escape(put_file_name) + ' - ' + put_file_data.length + ' bytes';
+        document.getElementById('put-file-button').disabled = false;
+    };
+    reader.readAsArrayBuffer(f);
+}
+
+function updateFiles() {
+    // Send the "import os" command to the terminal
+    term.send("import os");
+    term.send(String.fromCharCode(13));  // ASCII code for Enter
+    term.send("for name in os.listdir(): print(name)");
+    term.send(String.fromCharCode(13));  // ASCII code for Enter
+    term.send(String.fromCharCode(13));  // ASCII code for Enter
+}
+
+function autoPassword() {
+    // Send the "import os" command to the terminal
+    term.send("1234");
+    term.send(String.fromCharCode(13));  // ASCII code for Enter
+}
+
+function clearScreen() {
+    term.write("\x1B[H\x1B[J");
+    term.send("\r")
+}
+
+function sendCtrlC() {
+    term.send(String.fromCharCode(3));  // ASCII code for Ctrl+C
+}
+
+function sendCode() {
+    var fileName = document.getElementById("get_code").value;
+    if (fileName) {
+      // Send the file name to the ESP32 for execution
+      term.send(fileName + '\r');
+    }
+    document.getElementById("get_code").value = ''
+}
+
+function executeFile() {
+    var fileName = document.getElementById("file-name").value;
+    if (fileName) {
+      // Send the file name to the ESP32 for execution
+      term.send('exec(open("' + fileName + '").read())\r');
+    }
+    document.getElementById("file-name").value = ''
+}
+
+function confirmDeleteFile() {
+    var fileName = document.getElementById("file-name-delete").value;
+    if (fileName) {
+      if (confirm("Are you sure you want to delete the file '" + fileName + "'?")) {
+        // Send the file deletion command to the ESP32
+        term.send('import os; os.remove("' + fileName + '")\r');
+        alert("File '" + fileName + "' has been deleted.");
+      }
+    }
+    document.getElementById("file-name-delete").value = ''
+  }
+
+document.getElementById('put-file-select').addEventListener('click', function(){
+    this.value = null;
+}, false);
+
+document.getElementById('put-file-select').addEventListener('change', handle_put_file_select, false);
+document.getElementById('put-file-button').disabled = true;
+
+</script>
+
+</html>
