@@ -147,11 +147,13 @@ QtBlockPy.toggleCodePreview = function (forceState) {
 		$drawer.addClass('is-open');
 		$('#btn_preview').addClass('is-active');
 		$('#icon_handle_preview').text('chevron_right');
+		$('#btn_handle_preview').attr('title', 'Collapse Code Preview');
 		QtBlockPy.renderCodePreview();
 	} else {
 		$drawer.removeClass('is-open');
 		$('#btn_preview').removeClass('is-active');
 		$('#icon_handle_preview').text('chevron_left');
+		$('#btn_handle_preview').attr('title', 'Open Code Preview');
 	}
 };
 QtBlockPy.closeCodePreview = function () {
@@ -436,7 +438,14 @@ QtBlockPy.bindFunctions = function () {
 			terminal_state = "close";
 		}
 	});
-	$('#btn_close_preview, #btn_handle_preview').on("click", function () {
+	$('#btn_handle_preview').on("click", function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		QtBlockPy.toggleCodePreview();
+	});
+	$('#btn_close_preview').on("click", function (e) {
+		e.preventDefault();
+		e.stopPropagation();
 		QtBlockPy.closeCodePreview();
 	});
 	$('#btn_terminal').on("click", function () {
