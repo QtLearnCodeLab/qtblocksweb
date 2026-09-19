@@ -1,0 +1,63 @@
+/* QtBlocks-owned Blockly presentation. */
+.blocklySvg {
+  border-top: none !important;
+  background-color: #fff;
+}
+
+.blocklyScrollbarHandle {
+  fill: #0cf;
+}
+
+.blocklyToolboxDiv {
+  width: 13.5%;
+  margin-left: 0.2%;
+  background-color: lightgrey !important;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+.blocklyFlyoutBackground {
+  fill: #e6e6e6 !important;
+}
+
+.blocklyTreeRoot {
+  padding: 0 !important;
+}
+
+.blocklyToolboxDiv .blocklyTreeRoot [role="treeitem"] {
+  position: relative;
+}
+
+.blocklyToolboxDiv .blocklyTreeRoot [role="treeitem"].blocklyTreeRow {
+  padding: 6px 50px 6px 12px !important;
+  line-height: normal !important;
+}
+
+.blocklyTreeRow {
+  height: 30px !important;
+  line-height: 30px !important;
+}
+
+.blocklyTreeSeparator {
+  height: 10px !important;
+  border-bottom: none !important;
+  background: #e9f9f9 !important;
+}
+
+.colors_category {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 100%;
+}
+
+.blocklyScrollbarKnob {
+  fill: #2d2d64 !important;
+  fill-opacity: 0.7 !important;
+}
+
+.blocklyScrollbarBackground {
+  fill: none !important;
+  stroke-width: 0 !important;
+}

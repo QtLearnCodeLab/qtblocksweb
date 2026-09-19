@@ -12,17 +12,11 @@
 	<script type="text/javascript" src="js/blockly/blocks_compressed.js"></script>
 	<script type="text/javascript" src="js/blockly/python_compressed.js"></script>
 	<script type="text/javascript" src="js/blockly/javascript_compressed.js"></script>
+	<script type="text/javascript" src="js/vanilla-core.js"></script>
 	<script type="text/javascript" src="js/qtblockpy.js"></script>
 	<script type="text/javascript" src="js/boards.js"></script>
 	<script type="text/javascript" src="js/code.js"></script>
-
-	<script type="text/javascript" src="js/jquery-2.2.4.min.js"></script>
-	<script type="text/javascript" src="js/bootstrap.toggle.min.js"></script>
-	<script type="text/javascript" src="js/bootstrap.min.3.3.6.js"></script>
 	<script type="text/javascript" src="js/prettify.min.js"></script>
-	
-	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
-	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
 
 	<script type="text/javascript" src="js/hexlify.js"></script>
 	<script type="text/javascript" src="js/intel-hex.browser.js"></script>
@@ -30,7 +24,6 @@
 	<script type="text/javascript" src="js/ace/src-min-noconflict/ace.js"></script>
 	<script type="text/javascript" src="js/ace/src-min-noconflict/ext-language_tools.js"></script>
 
-	<script src="js/acorn_interpreter.js"></script>
 	<script src="js/term.js"></script>
 	<script src="js/FileSaver.js"></script>
 
@@ -43,15 +36,6 @@
 	<script src="js/microbit/microbit-fs.umd.min.js"></script>
 	<script src="lang/en.js" id="lang"></script>
 	<script src="js/microbit/micropythonapi.js"></script>
-	<script src="js/microbit/FileSaver.min.js" type="application/javascript"></script>
-	<script src="js/microbit/vex.combined.min.js" type="application/javascript"></script>
-	<script>vex.defaultOptions.className = 'vex-theme-wireframe';</script>
-	<script type="application/javascript">
-		if (navigator.appVersion.indexOf("MSIE 9") !== -1 || navigator.appVersion.indexOf("MSIE 8") !== -1 || navigator.appVersion.indexOf("MSIE 7") !== -1) {
-			document.write('<a href="https://www.microsoft.com/en-gb/download/internet-explorer.aspx">Please upgrade to IE 10 or greater.</a>');
-			document.execCommand('Stop');
-		}
-	</script>
 	<script type="application/javascript">
 		// VERSION INFORMATION
 		EDITOR_VERSION = "2.0.0";
@@ -59,18 +43,18 @@
 	</script>
 	<!-- CSS -->
 
-	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.3.3.6.css" />
-	<link rel="stylesheet" type="text/css" href="css/bootstrap.toggle.min.css" />
-	<link rel="stylesheet" type="text/css" href="css/qtblockpy.css" />
 	<link rel="stylesheet" type="text/css" href="css/tokens.css" />
+	<link rel="stylesheet" type="text/css" href="css/base.css" />
+	<link rel="stylesheet" type="text/css" href="css/font-awesome.min.css" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<link rel="stylesheet" type="text/css" href="css/workspace.css" />
+	<link rel="stylesheet" type="text/css" href="css/blockly-theme.css" />
+	<link rel="stylesheet" type="text/css" href="css/hardware.css" />
 	<link rel="stylesheet" type="text/css" href="css/navbar.css" />
 	<link rel="stylesheet" type="text/css" href="css/preview-drawer.css" />
 	<link rel="stylesheet" type="text/css" href="css/terminal-drawer.css" />
 	<link rel="stylesheet" type="text/css" href="css/modals.css" />
 	<link rel="stylesheet" type="text/css" href="css/prettify.min.css" />
-	<link rel="stylesheet" type="text/css" href="css/vex.css" />
-	<link rel="stylesheet" type="text/css" href="css/vex-theme-wireframe.css" />
 
 </head>
 
@@ -84,26 +68,26 @@
 			</div>
 			<div class="nav-divider"></div>
 			<div class="btn-group-nav">
-				<button id="btn_new" class="btn btn-nav" title="New Project">
+				<button id="btn_new" class="ui-button btn-nav" title="New Project">
 					<span class="material-icons">create_new_folder</span>
 				</button>
-				<button id="btn_fakeload" class="btn btn-nav" title="Open / Load File (.xml, .py)">
+				<button id="btn_fakeload" class="ui-button btn-nav" title="Open / Load File (.xml, .py)">
 					<span class="material-icons">folder_open</span>
 				</button>
 				<input type="file" id="load" accept=".xml,.py" style="display: none;" />
-				<button id="btn_saveXML" class="btn btn-nav" title="Save XML">
+				<button id="btn_saveXML" class="ui-button btn-nav" title="Save XML">
 					<span class="material-icons">save</span>
 				</button>
-				<button id="btn_example" class="btn btn-nav" data-toggle="modal" data-target="#exampleModal" title="Examples">
+				<button id="btn_example" class="ui-button btn-nav" data-dialog-target="#exampleModal" title="Examples">
 					<span class="material-icons">auto_stories</span>
 				</button>
 			</div>
 			<div class="nav-divider"></div>
 			<div class="btn-group-nav">
-				<button id="btn_undo" class="btn btn-nav" title="Undo">
+				<button id="btn_undo" class="ui-button btn-nav" title="Undo">
 					<span class="fa fa-undo"></span>
 				</button>
-				<button id="btn_redo" class="btn btn-nav" title="Redo">
+				<button id="btn_redo" class="ui-button btn-nav" title="Redo">
 					<span class="fa fa-repeat"></span>
 				</button>
 			</div>
@@ -111,54 +95,49 @@
 
 		<!-- Center: Mode Toggle & Target Hardware / Port -->
 		<div class="navbar-center">
-			<ul class="nav nav-tabs" role="tablist" style="display: none;">
-				<li role="presentation" class="active"><a href="#content_blocks" aria-controls="content_blocks"
-						role="tab" data-toggle="tab"></a></li>
-				<li role="presentation"><a href="#content_code" aria-controls="content_code" role="tab"
-						data-toggle="tab"></a></li>
+			<ul class="mode-tabs" role="tablist" style="display: none;">
+				<li role="presentation" class="is-active"><a href="#content_blocks" aria-controls="content_blocks"
+						role="tab" data-ui-tab="#content_blocks"></a></li>
+				<li role="presentation"><a href="#content_code" aria-controls="content_code" role="tab" data-ui-tab="#content_code"></a></li>
 			</ul>
 
 			<div class="mode-toggle-wrapper" title="Toggle Blocks / Python Code">
-				<input id="codeORblock" checked data-size="mini" data-toggle="toggle"
-					data-on="<span class='fa fa-puzzle fa-lg'></span> Blocks"
-					data-off="<span class='fa fa-code fa-lg'></span> Code" data-style="ios nav-toggle" data-onstyle="primary"
-					data-offstyle="info" type="checkbox">
+				<label class="mode-toggle-switch" for="codeORblock">
+					<input id="codeORblock" type="checkbox" checked>
+					<span class="mode-toggle-track">
+						<span class="mode-toggle-option mode-blocks">
+							<span class="fa fa-puzzle fa-lg"></span> Blocks
+						</span>
+						<span class="mode-toggle-option mode-code">
+							<span class="fa fa-code fa-lg"></span> Code
+						</span>
+						<span class="mode-toggle-thumb"></span>
+					</span>
+				</label>
 			</div>
 
 			<div class="nav-divider"></div>
 
 			<!-- Board Selector Group -->
 			<div class="nav-select-group" title="Select Target Hardware">
-				<button id="btn_card" class="btn btn-nav btn-nav-attached" data-toggle="modal" data-target="#card" title="Board Details">
+				<button id="btn_card" class="ui-button btn-nav btn-nav-attached" data-dialog-target="#card" title="Board Details">
 					<span class="fa fa-microchip"></span>
 				</button>
 				<select id="boards" class="nav-select" onchange="QtBlockPy.change_card();">
-					<optgroup label="Python">
-						<option value="python">Python</option>
-					</optgroup>
-					<optgroup label="Boards">
-						<option value="qtneo" selected="selected">QtPi Neo</option>
-						<option value="microbit">Microbit</option>
-					</optgroup>
-					<optgroup label="Library">
-						<option value="streamlit">Streamlit</option>
-						<option value="qtpy">QtPy</option>
-					</optgroup>
-					<optgroup label="Javascript">
-						<option value="javascript">JavaScript</option>
-					</optgroup>
+					<option value="qtneo" selected="selected">QtPi Neo</option>
+					<option value="python">Python</option>
 				</select>
 			</div>
 
 			<!-- Port & Upload Group -->
 			<div class="nav-select-group" title="Serial Port & Upload">
-				<button id="btn_usb" class="btn btn-nav btn-nav-attached" data-toggle="modal" data-target="#usb" title="Port Settings">
+				<button id="btn_usb" class="ui-button btn-nav btn-nav-attached" data-dialog-target="#usb" title="Connect & Pair QtPi Veda Board">
 					<span class="fa fa-usb"></span>
 				</button>
 				<select id="portseries" class="nav-select" onchange="QtBlockPy.save_com();">
 					<option value="none">Port: None</option>
 				</select>
-				<button id="btn_flash" class="btn btn-nav btn-nav-flash" title="Upload to Board">
+				<button id="btn_flash" class="ui-button btn-nav btn-nav-flash" aria-label="Upload to Board">
 					<span class="fa fa-arrow-right"></span>
 				</button>
 			</div>
@@ -167,61 +146,61 @@
 		<!-- Right: Run Actions, Code Preview & Utilities -->
 		<div class="navbar-right">
 			<!-- Run/Stop in Blocks mode -->
-			<button id="btn_run" class="btn btn-run" title="Run Blocks (Skulpt)">
-				<span class="material-icons">play_arrow</span> Run
+			<button id="btn_run" class="ui-button btn-run" title="Run Blocks (Skulpt)">
+				<span class="material-icons">play_arrow</span> <span class="btn-text">Run</span>
 			</button>
-			<button id="btn_stop" class="btn btn-stop hidden" title="Stop Execution">
-				<span class="material-icons">stop</span> Stop
+			<button id="btn_stop" class="ui-button btn-stop hidden" title="Stop Execution">
+				<span class="material-icons">stop</span> <span class="btn-text">Stop</span>
 			</button>
 
 			<!-- Run/Stop in Custom/Code mode -->
-			<button id="btn_run_custom" class="btn btn-run hidden" title="Run Python Code (Skulpt)">
-				<span class="material-icons">play_arrow</span> Run
+			<button id="btn_run_custom" class="ui-button btn-run hidden" title="Run Python Code (Skulpt)">
+				<span class="material-icons">play_arrow</span> <span class="btn-text">Run</span>
 			</button>
-			<button id="btn_stop_custom" class="btn btn-stop hidden" title="Stop Code Execution">
-				<span class="material-icons">stop</span> Stop
+			<button id="btn_stop_custom" class="ui-button btn-stop hidden" title="Stop Code Execution">
+				<span class="material-icons">stop</span> <span class="btn-text">Stop</span>
 			</button>
 
-			<!-- Code Preview Toggle -->
-			<button id="btn_preview" class="btn btn-nav btn-preview-toggle" data-toggle="modal" title="Live Python Code Preview">
-				<span class="material-icons">code</span> Preview
+			<!-- Code Preview Toggle (removed from navbar, now accessed via `< Code` tab on workspace edge) -->
+			<button id="btn_preview" class="ui-button btn-nav btn-preview-toggle" style="display: none !important;" title="Live Python Code Preview">
+				<span class="material-icons">code</span> <span class="btn-text">Preview</span>
 			</button>
 
 			<div class="nav-divider"></div>
 
 			<!-- Utilities -->
 			<div class="btn-group-nav">
-				<button id="btn_search" class="btn btn-nav hidden" title="Find / Replace">
+				<button id="btn_search" class="ui-button btn-nav hidden" title="Find / Replace">
 					<span class="material-icons">search</span>
 				</button>
-				<button id="btn_save_custom_py" class="btn btn-nav hidden" title="Save Python (.py)">
+				<button id="btn_save_custom_py" class="ui-button btn-nav hidden" title="Save Python (.py)">
 					<span class="material-icons">save_alt</span>
 				</button>
-				<button id="btn_print" class="btn btn-nav" title="Snapshot Workspace">
+				<button id="btn_print" class="ui-button btn-nav" title="Snapshot Workspace">
 					<span class="fa fa-camera"></span>
 				</button>
-				<button id="btn_config" class="btn btn-nav" data-toggle="modal" data-target="#configModal" title="Toolbox Config">
+				<button id="btn_config" class="ui-button btn-nav" data-dialog-target="#configModal" title="Toolbox Config">
 					<span class="fa fa-cog"></span>
 				</button>
-				<button id="btn_api_mp" class="btn btn-nav" title="QtPi API Documentation"
-					onclick="window.open('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html')">
+				<button id="btn_api_mp" class="ui-button btn-nav" title="QtPi API Documentation"
+					onclick="QtBlockPy.openExternalLink('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html', event)">
 					<span class="material-icons">menu_book</span>
 				</button>
-				<button id="btn_about" class="btn btn-nav" data-toggle="modal" data-target="#aboutModal" title="About QtBlocks">
+				<button id="btn_about" class="ui-button btn-nav" data-dialog-target="#aboutModal" title="About QtBlocks">
 					<span class="material-icons">help_outline</span>
 				</button>
 			</div>
 
-			<span id="survol" class="navbar-status-hint"></span>
 		</div>
 	</div>
-	<div id="divBody" class="tab-content">
-		<div role="tabpanel" id="content_blocks" class="tab-pane fade in active" style="position: relative;">
+	<div id="divBody" class="workspace-tabs">
+		<div role="tabpanel" id="content_blocks" class="workspace-pane is-active" style="position: relative;">
 			<!-- Modern Collapsible Code Preview Drawer (Inspector) -->
 			<div id="toggle" class="preview-drawer">
-				<!-- Collapsible Handle on left edge of drawer -->
+				<!-- Collapsible Handle on left edge of drawer: < Code -->
 				<button id="btn_handle_preview" class="preview-drawer-handle" title="Open Code Preview">
 					<span class="material-icons" id="icon_handle_preview">chevron_left</span>
+					<span class="handle-label">Code</span>
 				</button>
 
 				<!-- Drawer Header -->
@@ -251,7 +230,7 @@
 				</div>
 			</div>
 
-			<div id="toggle_flash" class="modal-content" style="display: none;">
+			<div id="toggle_flash" class="embedded-panel" style="display: none;">
 				<div style="display:inline-block; vertical-align:top;">
 					<form>
 						<input type="text" name="webrepl_url" id="webrepl_url" value="ws://192.168.43.208:8266/" />
@@ -269,26 +248,26 @@
 				</div>
 				
 			</div>
-			<div id="toggle_microbit" class="modal-content" style="display: none;">
+			<div id="toggle_microbit" class="embedded-panel" style="display: none;">
 				<div style="display: inline-block; vertical-align: top;">
-					<div id="btn_group_microbit" class="btn-group" role="group">
-						<button id="command-connecting" class="btn btn-default" style="display: none;">
+					<div id="btn_group_microbit" class="device-action-group" role="group">
+						<button id="command-connecting" class="ui-button device-action-button" style="display: none;">
 							<span class="material-icons">contactless</span>
 							<div class="roundlabel">Connecting</div>
 						</button>
-						<button id="command-connect" class="btn btn-default">
+						<button id="command-connect" class="ui-button device-action-button">
 							<span class="material-icons">link</span>
 							<div class="roundlabel">connect</div>
 						</button>
-						<button id="command-disconnect" class="btn btn-default" style="display: none;">
+						<button id="command-disconnect" class="ui-button device-action-button" style="display: none;">
 							<span class="material-icons">link_off</span>
 							<div class="roundlabel">Disconnect</div>
 						</button>
-						<button id="command-flash" class="btn btn-default" style="display: none;">
+						<button id="command-flash" class="ui-button device-action-button" style="display: none;">
 							<span class="material-icons">login</span>
 							<div class="roundlabel">Flash</div>
 						</button>
-						<button id="command-serial" class="btn btn-default">
+						<button id="command-serial" class="ui-button device-action-button">
 							<span class="material-icons">airplay</span>
 							<div class="roundlabel">Open Serial</div>
 						</button>
@@ -324,7 +303,7 @@
 				</div>
 			</div>
 		</div>
-		<div role="tabpanel" id="content_code" class="tab-pane fade"></div>
+		<div role="tabpanel" id="content_code" class="workspace-pane"></div>
 
 	</div>
 	<!-- Modern Docked Bottom Terminal Drawer (Console Output) -->
@@ -349,64 +328,69 @@
 		</div>
 	</div>
 
-	<!-- message modal -->
-	<div class="modal fade" id="message" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false"
-		data-backdrop="static">
-		<div class="modal-dialog modal-sm">
-			<div class="modal-content">
-				<div class="modal-body">
+	<!-- status dialog -->
+	<div class="dialog-overlay" id="message" tabindex="-1" role="dialog" aria-hidden="true" data-dialog-static="true">
+		<div class="dialog-panel dialog-panel-sm">
+			<div class="dialog-surface">
+				<div class="dialog-body">
 					<div id="messageDIV"></div>
 				</div>
 			</div>
 		</div>
 	</div>
-	<!-- about modal -->
-	<div class="modal fade" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel"
+	<!-- about dialog -->
+	<div class="dialog-overlay" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel"
 		aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-							aria-hidden="true">&#215;</span></button>
-					<span class="fa fa-2x" class="modal-title" id="aboutModalLabel"></span>
+		<div class="dialog-panel">
+			<div class="dialog-surface">
+				<div class="dialog-header">
+					<span class="fa fa-info-circle fa-2x dialog-title" id="aboutModalLabel"></span>
+					<button type="button" class="dialog-close" data-dialog-dismiss aria-label="Close"><span
+							aria-hidden="true">&times;</span></button>
 				</div>
-				<div class="modal-body">
-					<div class="container-fluid">
-						<div class="row">
-							<div class="col-md-4"><img src="img/logo.png" /></div>
-							<div class="col-md-8">
-								<span class="fa fa-lg" id="versionapp"></span>
-								<span id="aboutBody"></span><br /><br />
-								<button id="btn_site" class="btn btn-default" onclick="window.open('https://qtpi.in/')">
-									<span class="fa fa-search" id="span_site"></span>
+				<div class="dialog-body about-modal-body">
+					<div class="about-card-layout">
+						<div class="about-logo-container">
+							<img src="img/logo.png" alt="QtPi Logo" class="about-logo-img" />
+							<div class="about-version-badge" id="versionapp">v2.0.0</div>
+						</div>
+						<div class="about-content-container">
+							<h3 class="about-app-title">QtBlocks Studio</h3>
+							<p id="aboutBody" class="about-description-text"></p>
+							<div class="about-links-group">
+								<button id="btn_site" class="about-link-btn" onclick="QtBlockPy.openExternalLink('https://qtpi.in/', event)" title="Visit QtPi Website">
+									<span class="fa fa-globe"></span>
+									<span id="span_site">Website</span>
 								</button>
-								<button id="btn_contact" class="btn btn-default"
-									onclick="window.open('https://qtpi.in/#contact')">
-									<span class='fa fa-envelope' id="span_contact"></span>
+								<button id="btn_contact" class="about-link-btn" onclick="QtBlockPy.openExternalLink('https://qtpi.in/#contact', event)" title="Contact QtPi">
+									<span class="fa fa-envelope-o"></span>
+									<span id="span_contact">Contact</span>
 								</button>
-								<button id="btn_api_mp" class="btn btn-default"
-									onclick="window.open('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html')">
-									<span class='fa fa-hand-o-right'>API Doc</span>
+								<button id="btn_about_docs" class="about-link-btn" onclick="QtBlockPy.openExternalLink('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html', event)" title="API Documentation">
+									<span class="fa fa-book"></span>
+									<span>API Docs</span>
 								</button>
 							</div>
 						</div>
 					</div>
 				</div>
-			
+				<div class="dialog-footer about-modal-footer">
+					<span class="about-copyright-text">&copy; 2026 QtPi Robotics. Empowering future innovators.</span>
+				</div>
 			</div>
 		</div>
 	</div>
-	<!-- toolbox config modal -->
-	<div class="modal fade" id="configModal" tabindex="-1" role="dialog" aria-labelledby="configModalLabel"
+	<!-- toolbox configuration dialog -->
+	<div class="dialog-overlay" id="configModal" tabindex="-1" role="dialog" aria-labelledby="configModalLabel"
 		aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<span class="fa fa-cog fa-2x modal-title" id="configModalLabel"></span>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+		<div class="dialog-panel">
+			<div class="dialog-surface">
+				<div class="dialog-header">
+					<span class="fa fa-cog fa-2x dialog-title" id="configModalLabel"></span>
+					<button type="button" class="dialog-close" data-dialog-dismiss aria-label="Close"><span
 							aria-hidden="true">&times;</span></button>
 				</div>
-				<div class="modal-body config-selectors-row">
+				<div class="dialog-body config-selectors-row">
 					<div class="config-field-group">
 						<label id="span_languageMenu" class="config-field-label">Language</label>
 						<div class="config-select-wrapper">
@@ -430,25 +414,26 @@
 						<span id="span_select_all">Check all categories</span>
 					</label>
 				</div>
-				<div class="modal-body" id="modal-body-config"></div>
-				<div class="modal-footer">
-					<button id="btn_valid_config" type="button" class="btn btn-primary"></button>
+				<div class="dialog-body" id="modal-body-config"></div>
+				<div class="dialog-footer">
+					<button id="btn_valid_config" type="button" class="ui-button dialog-primary-button"></button>
 				</div>
 			</div>
 		</div>
 	</div>
-	<!-- example modal -->
-	<div class="modal fade" id="exampleModal">
-		<div class="modal-dialog modal-lg">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"><span
-							aria-hidden="true">&#215;</span></button>
-					<span class="fa fa-file-text fa-2x" class="modal-title" id="exampleModalLabel"></span>
+	<!-- examples dialog -->
+	<div class="dialog-overlay" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+		aria-hidden="true">
+		<div class="dialog-panel dialog-panel-lg">
+			<div class="dialog-surface">
+				<div class="dialog-header">
+					<span class="fa fa-file-text fa-2x dialog-title" id="exampleModalLabel"></span>
+					<button type="button" class="dialog-close" data-dialog-dismiss aria-label="Close"><span
+							aria-hidden="true">&times;</span></button>
 				</div>
-				<div class="modal-body">
-					<div class="table-responsive">
-						<table class="table table-hover">
+				<div class="dialog-body">
+					<div class="examples-table-scroll">
+						<table class="examples-table">
 							<tbody id="includedContent"></tbody>
 						</table>
 					</div>
@@ -456,12 +441,97 @@
 			</div>
 		</div>
 	</div>
-	<!-- USB modal -->
-	<div class="modal fade" id="usb">
-		<div class="modal-dialog modal-sm">
-			<div class="modal-content">
-				<div class="modal-body">
-					<span id="aboutusbLabel"></span>
+	<!-- QtPi Veda Pairing & Setup dialog -->
+	<div class="dialog-overlay" id="usb" tabindex="-1" role="dialog" aria-labelledby="usbModalLabel" aria-hidden="true">
+		<div class="dialog-panel" style="max-width: 520px; width: 100%;">
+			<div class="dialog-surface">
+				<div class="dialog-header">
+					<div style="display:flex; align-items:center; gap:10px;">
+						<span class="fa fa-usb fa-2x dialog-title" style="color:var(--color-brand); font-size: 20px;"></span>
+						<span class="dialog-title" id="usbModalLabel" style="font-size:17px; font-weight:700;">QtPi Veda Device Setup</span>
+					</div>
+					<button type="button" class="dialog-close" data-dialog-dismiss aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				</div>
+				<div class="dialog-body" style="padding: 20px 24px;">
+					<!-- Active Connection Status Card -->
+					<div id="veda_status_card" style="margin-bottom: 18px; padding: 14px 16px; border-radius: var(--radius-lg); background: var(--bg-muted); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+						<div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+							<span id="veda_status_dot" style="width: 12px; height: 12px; border-radius: 50%; background: #94a3b8; display: inline-block; flex-shrink: 0;"></span>
+							<div style="min-width: 0;">
+								<div id="veda_status_text" style="font-weight: 600; font-size: 13.5px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">No Board Connected</div>
+								<div id="veda_status_sub" style="font-size: 12px; color: var(--text-secondary);">Select USB or Bluetooth below to connect.</div>
+							</div>
+						</div>
+						<div id="veda_status_action"></div>
+					</div>
+
+					<!-- MicroPython Capability & Files Card (visible when connected) -->
+					<div id="veda_mpy_section" style="display: none; margin-bottom: 18px; border: 1px solid var(--border-default); border-radius: var(--radius-lg); background: var(--bg-surface); overflow: hidden; box-shadow: var(--shadow-xs);">
+						<div style="padding: 10px 14px; background: var(--bg-muted); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+							<div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+								<span class="fa fa-microchip" style="color: var(--color-brand); font-size: 14px;"></span>
+								<span style="font-weight: 600; font-size: 13px; color: var(--text-primary);">MicroPython Files</span>
+								<span id="veda_mpy_badge" style="font-size: 10.5px; padding: 2px 8px; border-radius: 9999px; font-weight: 700; background: #fef3c7; color: #92400e;">Detecting...</span>
+							</div>
+							<button type="button" id="btn_refresh_mpy_files" class="ui-button" style="font-size: 11px; padding: 3px 9px; border: 1px solid var(--border-default); background: var(--bg-surface); color: var(--text-secondary); border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; gap: 5px;" onclick="QtBlockPy.probeMicroPythonAndFiles()">
+								<span class="fa fa-refresh" id="mpy_refresh_icon"></span> <span>Refresh Files</span>
+							</button>
+						</div>
+						<div id="veda_mpy_content" style="padding: 12px 14px;"></div>
+					</div>
+
+					<!-- Pairing Options List -->
+					<div style="display: flex; flex-direction: column; gap: 12px;">
+						<!-- Option 1: USB Data Cable -->
+						<div id="veda_row_usb" class="veda-option-row" style="padding: 14px 16px; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-surface); display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: all 0.2s ease;">
+							<div style="display: flex; align-items: center; gap: 14px; min-width: 0;">
+								<div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--color-brand-light); color: var(--color-brand); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+									<span class="fa fa-plug"></span>
+								</div>
+								<div style="min-width: 0;">
+									<div style="display: flex; align-items: center; gap: 8px;">
+										<span style="font-weight: 600; font-size: 13.5px; color: var(--text-primary);">USB Data Cable</span>
+										<span id="badge_usb_connected" style="display: none; font-size: 11px; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 9999px;">● Connected</span>
+									</div>
+									<div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;">Veda ESP32 (CP2102 / CH340 / S3) or Veda 2560</div>
+								</div>
+							</div>
+							<div id="usb_row_action" style="flex-shrink: 0;">
+								<button id="btn_pair_usb" type="button" class="btn-veda-pair btn-veda-primary" onclick="QtBlockPy.pairVedaPort('usb')">
+									<span class="fa fa-spinner fa-spin" id="pair_usb_spinner" style="display: none; margin-right: 6px;"></span>
+									<span id="pair_usb_text">Pair USB</span>
+								</button>
+							</div>
+						</div>
+
+						<!-- Option 2: Bluetooth Serial SPP -->
+						<div id="veda_row_bt" class="veda-option-row" style="padding: 14px 16px; border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-surface); display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: all 0.2s ease;">
+							<div style="display: flex; align-items: center; gap: 14px; min-width: 0;">
+								<div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+									<span class="fa fa-bluetooth"></span>
+								</div>
+								<div style="min-width: 0;">
+									<div style="display: flex; align-items: center; gap: 8px;">
+										<span style="font-weight: 600; font-size: 13.5px; color: var(--text-primary);">Bluetooth Serial (SPP)</span>
+										<span id="badge_bt_connected" style="display: none; font-size: 11px; font-weight: 700; color: #4338ca; background: #e0e7ff; border: 1px solid #c7d2fe; padding: 2px 8px; border-radius: 9999px;">● Connected</span>
+									</div>
+									<div style="font-size: 11.5px; color: var(--text-secondary); margin-top: 2px;">Wireless serial (e.g. QtVedaV3-0123)</div>
+								</div>
+							</div>
+							<div id="bt_row_action" style="flex-shrink: 0;">
+								<button id="btn_pair_bluetooth" type="button" class="btn-veda-pair btn-veda-secondary" onclick="QtBlockPy.pairVedaPort('bluetooth')">
+									<span class="fa fa-spinner fa-spin" id="pair_bt_spinner" style="display: none; margin-right: 6px;"></span>
+									<span id="pair_bt_text">Pair Bluetooth</span>
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Feedback & Guidance banner -->
+					<div id="veda_pair_feedback" style="display: none; margin-top: 14px; padding: 12px 16px; border-radius: var(--radius-md); font-size: 12px; line-height: 1.5;"></div>
+				</div>
+				<div class="dialog-footer">
+					<button type="button" class="ui-button" data-dialog-dismiss style="padding: 7px 18px; border: 1px solid var(--border-default); background: var(--bg-surface); color: var(--text-primary); border-radius: var(--radius-md); cursor: pointer; font-size: 13px;">Done</button>
 				</div>
 			</div>
 		</div>
@@ -14968,9 +15038,17 @@
 		},
   	};
 	web_editor(config);
-	$(window).load(function () { $(".loading").fadeOut("slow") });
+	window.addEventListener('load', function () {
+		var loading = document.querySelector(".loading");
+		if (loading) {
+			loading.style.transition = "opacity 0.4s ease";
+			loading.style.opacity = "0";
+			setTimeout(function () { loading.style.display = "none"; }, 400);
+		}
+	});
 	ace.require("ace/ext/language_tools");
 	var editor = ace.edit("content_code");
+	window.editor = editor;
 	editor.setTheme("ace/theme/chrome");
 	editor.session.setTabSize(2);
 	editor.setShowPrintMargin(false);

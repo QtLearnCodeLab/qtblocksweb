@@ -32,7 +32,7 @@
                 <field name="VAR" id="o@__7ANdMcCZI`X@Rz)c">irValue</field>
                 <value name="VALUE">
                   <block type="qtpi_infrared_read" id="CvGaJmg=D.Dke710AdS`">
-                    <value name="infrared_object">
+                    <value name="ir_object">
                       <block type="variables_get" id="6=w@6~V7upN[+[E.FGG%">
                         <field name="VAR" id="Z.QbPwzKz,q_C~q^jR]v">ir</field>
                       </block>

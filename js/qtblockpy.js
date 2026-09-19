@@ -76,42 +76,86 @@ QtBlockPy.init = function () {
 	$('#boards option[value="' + value + '"]').attr('selected', 'selected').text();
 	$('#btn_stop').addClass("hidden");
 	QtBlockPy.closeCodePreview();
+
+	QtBlockPy.refreshVedaPorts();
+	if (navigator.serial) {
+		navigator.serial.addEventListener('connect', function () {
+			QtBlockPy.refreshVedaPorts();
+		});
+		navigator.serial.addEventListener('disconnect', function () {
+			QtBlockPy.refreshVedaPorts();
+		});
+	}
 };
 QtBlockPy.loadFile = function () {
 	var urlFile = QtBlockPy.getStringParamFromUrl('url', '');
 	if (urlFile.endsWith(".py")) {
 		$.get(urlFile, function (data) {
-			$('#codeORblock').bootstrapToggle("off");
-			$('a[href="#content_code"]').tab('show');
+			$('#codeORblock').prop("checked", false);
+			QtUI.showPane("#content_code");
 			$('#btn_print').addClass("hidden");
 			$('#btn_preview').addClass("hidden");
 			$('#btn_search').removeClass("hidden");
+			$('#btn_run').addClass("hidden");
+			$('#btn_run_custom').removeClass("hidden");
 			window.localStorage.content = "off";
-			editor.session.setMode("ace/mode/python");
-			editor.setOptions({
-				enableBasicAutocompletion: true,
-				enableSnippets: true,
-				enableLiveAutocompletion: true
-			});
-			editor.setValue(data, 1);
+			if (window.editor) {
+				editor.session.setMode("ace/mode/python");
+				editor.setOptions({
+					enableBasicAutocompletion: true,
+					enableSnippets: true,
+					enableLiveAutocompletion: true
+				});
+				editor.setValue(data, 1);
+			}
 		}, 'text');
+		return;
 	}
 	if (urlFile.endsWith(".ino")) {
 		$.get(urlFile, function (data) {
-			$('#codeORblock').bootstrapToggle("off");
-			$('a[href="#content_code"]').tab('show');
+			$('#codeORblock').prop("checked", false);
+			QtUI.showPane("#content_code");
 			$('#btn_print').addClass("hidden");
 			$('#btn_preview').addClass("hidden");
 			$('#btn_search').removeClass("hidden");
+			$('#btn_run').addClass("hidden");
+			$('#btn_run_custom').removeClass("hidden");
 			window.localStorage.content = "off";
-			editor.session.setMode("ace/mode/c_cpp");
-			editor.setOptions({
-				enableBasicAutocompletion: true,
-				enableSnippets: true,
-				enableLiveAutocompletion: true
-			});
-			editor.setValue(data, 1);
+			if (window.editor) {
+				editor.session.setMode("ace/mode/c_cpp");
+				editor.setOptions({
+					enableBasicAutocompletion: true,
+					enableSnippets: true,
+					enableLiveAutocompletion: true
+				});
+				editor.setValue(data, 1);
+			}
 		}, 'text');
+		return;
+	}
+	if (urlFile.endsWith(".xml")) {
+		$.get(urlFile, function (data) {
+			if (QtBlockPy.workspace) {
+				QtBlockPy.workspace.clear();
+			}
+			QtBlockPy.loadBlocks(data);
+			$('#codeORblock').prop("checked", true);
+			window.localStorage.content = "on";
+			QtUI.showPane("#content_blocks");
+			$('#btn_print').removeClass("hidden");
+			$('#btn_preview').removeClass("hidden");
+			$('#btn_run').removeClass("hidden");
+			$('#btn_run_custom').addClass("hidden");
+			$('#btn_stop').addClass("hidden");
+			$('#btn_stop_custom').addClass("hidden");
+			$('#btn_search').addClass("hidden");
+			if (window.editor && QtBlockPy.workspace) {
+				var code = Blockly.Python.workspaceToCode(QtBlockPy.workspace);
+				editor.setValue(code, 1);
+			}
+			QtBlockPy.renderCodePreview();
+		}, 'text');
+		return;
 	}
 	var loadOnce = null;
 	try { loadOnce = window.localStorage.loadOnceBlocks; } catch (e) { }
@@ -121,11 +165,863 @@ QtBlockPy.loadFile = function () {
 		QtBlockPy.loadBlocks();
 	}
 };
+
+QtBlockPy.VEDA_USB_FILTERS = [
+	{ usbVendorId: 0x10c4 }, // CP210x (QtPi Veda ESP32)
+	{ usbVendorId: 0x1a86 }, // CH340 / CH341 / CH9102 (QtPi Veda ESP32 / Mega)
+	{ usbVendorId: 0x303a }, // ESP32-S2 / S3 / native USB
+	{ usbVendorId: 0x2341 }, // Mega 2560 / Uno (QtPi Veda Classic)
+	{ usbVendorId: 0x0403 }  // FTDI
+];
+
+QtBlockPy.activeVedaPorts = [];
+QtBlockPy.selectedVedaPort = null;
+
+QtBlockPy.matchVedaBoard = function (portInfo, port) {
+	if (!portInfo && !port) return null;
+	var vid = (portInfo?.usbVendorId || 0).toString(16).toLowerCase().padStart(4, '0');
+	var pid = (portInfo?.usbProductId || 0).toString(16).toLowerCase().padStart(4, '0');
+	if (vid === '10c4' && pid === 'ea60') return { name: 'QtPi Veda ESP32 (CP2102)', type: 'usb', label: 'QtPi Veda ESP32 (USB)' };
+	if (vid === '1a86' && pid === '7523') return { name: 'QtPi Veda (CH340)', type: 'usb', label: 'QtPi Veda (USB CH340)' };
+	if (vid === '303a' && pid === '1001') return { name: 'QtPi Veda ESP32-S3', type: 'usb', label: 'QtPi Veda ESP32-S3 (USB)' };
+	if (vid === '303a' && pid === '0002') return { name: 'QtPi Veda ESP32-S2', type: 'usb', label: 'QtPi Veda ESP32-S2 (USB)' };
+	if (vid === '2341' && (pid === '0042' || pid === '0010')) return { name: 'QtPi Veda 2560 (Mega)', type: 'usb', label: 'QtPi Veda 2560 (USB)' };
+
+	var portName = String(port?.portName || portInfo?.displayName || '').toLowerCase();
+	if (portName.includes('qtveda')) {
+		return { name: 'QtVeda (Bluetooth SPP)', type: 'bluetooth', label: 'QtVeda (Bluetooth SPP)' };
+	}
+	if (vid !== '0000') {
+		return { name: 'QtPi Veda (USB Serial)', type: 'usb', label: 'QtPi Veda (USB Serial)' };
+	}
+	return { name: 'QtVeda Board', type: 'bluetooth', label: 'QtVeda Board (Bluetooth SPP)' };
+};
+
+
+QtBlockPy._activeReader = null;
+QtBlockPy._mpyProbedPort = null;
+
+QtBlockPy.stopSerialStream = async function () {
+	if (QtBlockPy._activeReader) {
+		try {
+			await QtBlockPy._activeReader.cancel();
+		} catch (e) {}
+		try {
+			QtBlockPy._activeReader.releaseLock();
+		} catch (e) {}
+		QtBlockPy._activeReader = null;
+	}
+};
+
+QtBlockPy.probeMicroPythonAndFiles = async function () {
+	var port = QtBlockPy.selectedVedaPort;
+	var mpySection = document.getElementById('veda_mpy_section');
+	var mpyBadge = document.getElementById('veda_mpy_badge');
+	var mpyContent = document.getElementById('veda_mpy_content');
+	var refreshIcon = document.getElementById('mpy_refresh_icon');
+
+	if (!port) {
+		if (mpySection) mpySection.style.display = 'none';
+		return;
+	}
+
+	if (mpySection) mpySection.style.display = 'block';
+	if (mpyBadge) {
+		mpyBadge.style.background = '#fef3c7';
+		mpyBadge.style.color = '#92400e';
+		mpyBadge.textContent = 'Probing REPL...';
+	}
+	if (refreshIcon) refreshIcon.classList.add('fa-spin');
+	if (mpyContent) {
+		mpyContent.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);padding:6px 0;"><span class="fa fa-spinner fa-spin"></span> Checking MicroPython capability and reading files...</div>';
+	}
+
+	await QtBlockPy.stopSerialStream();
+
+	var wasAlreadyOpen = Boolean(port.readable && port.writable);
+	var reader = null;
+	var writer = null;
+
+	try {
+		if (!wasAlreadyOpen) {
+			await port.open({ baudRate: 115200 });
+		}
+
+		writer = port.writable.getWriter();
+		reader = port.readable.getReader();
+		var textEncoder = new TextEncoder();
+		var textDecoder = new TextDecoder();
+
+		function readUntil(delimiter, timeoutMs) {
+			return new Promise(function (resolve) {
+				var buffer = '';
+				var timer = setTimeout(function () {
+					resolve(buffer);
+				}, timeoutMs);
+
+				(async function loop() {
+					try {
+						while (true) {
+							var { value, done } = await reader.read();
+							if (done) break;
+							if (value) {
+								buffer += textDecoder.decode(value);
+								if (buffer.includes(delimiter)) {
+									clearTimeout(timer);
+									resolve(buffer);
+									return;
+								}
+							}
+						}
+					} catch (e) {
+						clearTimeout(timer);
+						resolve(buffer);
+					}
+				})();
+			});
+		}
+
+		// 1. Send Ctrl-C Ctrl-C Ctrl-A to enter Raw REPL
+		await writer.write(textEncoder.encode('\r\x03\x03\x01'));
+		var rawReplBanner = await readUntil('raw REPL', 1400);
+
+		if (!rawReplBanner.includes('raw REPL')) {
+			// Did not respond with raw REPL -> Not MicroPython
+			await writer.write(textEncoder.encode('\x02')); // Ctrl-B exit
+			if (mpyBadge) {
+				mpyBadge.style.background = '#e0f2fe';
+				mpyBadge.style.color = '#0369a1';
+				mpyBadge.textContent = 'Arduino / Serial Mode';
+			}
+			if (mpyContent) {
+				mpyContent.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:4px 0;">' +
+					'<div style="display:flex;align-items:center;gap:8px;font-weight:600;color:#0369a1;margin-bottom:4px;">' +
+					'<span class="fa fa-microchip"></span> Arduino / Serial Runtime Active' +
+					'</div>' +
+					'Your board is connected in <strong>Arduino / Serial Mode</strong> (supports Firmata & direct serial communication for Code2Play / Arduino apps).' +
+					'<div style="margin-top:8px;font-size:11.5px;color:var(--text-tertiary);">' +
+					'💡 <em>On-board flash file storage is specific to MicroPython boards. If you wish to use Python blocks with on-board files, flash MicroPython firmware via <strong>Hardware Flasher</strong>.</em>' +
+					'</div>' +
+					'</div>';
+			}
+			return;
+		}
+
+		// 2. Query MicroPython version, platform, and directory contents
+		var probeScript = 
+			'import sys, uos, json\r\n' +
+			'def _g():\r\n' +
+			' fl = []\r\n' +
+			' try:\r\n' +
+			'  for e in uos.ilistdir():\r\n' +
+			'   fl.append({"name": e[0], "isDir": bool(e[1] & 0x4000), "size": e[3] if len(e) > 3 else 0})\r\n' +
+			' except:\r\n' +
+			'  try:\r\n' +
+			'   for f in uos.listdir():\r\n' +
+			'    fl.append({"name": f, "isDir": False, "size": 0})\r\n' +
+			'  except:\r\n' +
+			'   pass\r\n' +
+			' v = ".".join([str(x) for x in sys.implementation.version])\r\n' +
+			' return {"mpy": True, "ver": v, "plat": sys.platform, "files": fl}\r\n' +
+			'print("__JSON_START__" + json.dumps(_g()) + "__JSON_END__")\r\n';
+
+		await writer.write(textEncoder.encode(probeScript + '\x04'));
+		var probeResponse = await readUntil('__JSON_END__', 2200);
+
+		// Exit raw REPL
+		await writer.write(textEncoder.encode('\x02'));
+
+		var jsonStart = probeResponse.indexOf('__JSON_START__');
+		var jsonEnd = probeResponse.indexOf('__JSON_END__');
+
+		if (jsonStart !== -1 && jsonEnd !== -1) {
+			var jsonStr = probeResponse.substring(jsonStart + '__JSON_START__'.length, jsonEnd);
+			var info = JSON.parse(jsonStr);
+
+			if (mpyBadge) {
+				mpyBadge.style.background = '#d1fae5';
+				mpyBadge.style.color = '#065f46';
+				mpyBadge.textContent = 'MicroPython v' + info.ver + ' (' + info.plat + ')';
+			}
+
+			QtBlockPy.renderMicroPythonFiles(info.files);
+		} else {
+			if (mpyBadge) {
+				mpyBadge.style.background = '#d1fae5';
+				mpyBadge.style.color = '#065f46';
+				mpyBadge.textContent = 'MicroPython Active';
+			}
+			if (mpyContent) {
+				mpyContent.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);">MicroPython REPL is ready. No files returned or listing timed out.</div>';
+			}
+		}
+	} catch (err) {
+		console.warn('MicroPython probe error:', err);
+		if (mpyBadge) {
+			mpyBadge.style.background = '#fee2e2';
+			mpyBadge.style.color = '#991b1b';
+			mpyBadge.textContent = 'Check Failed';
+		}
+		if (mpyContent) {
+			mpyContent.innerHTML = '<div style="font-size:12px;color:#991b1b;">Could not communicate with REPL: ' + (err.message || err) + '</div>';
+		}
+	} finally {
+		if (writer) {
+			try { writer.releaseLock(); } catch (e) {}
+		}
+		if (reader) {
+			try { if (reader.cancel) reader.cancel().catch(function(){}); reader.releaseLock(); } catch (e) {}
+		}
+		if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+	}
+};
+
+QtBlockPy.renderMicroPythonFiles = function (files) {
+	var mpyContent = document.getElementById('veda_mpy_content');
+	if (!mpyContent) return;
+
+	var topBarHtml = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">' +
+		'<span style="font-size:11.5px;color:var(--text-secondary);font-weight:500;">Flash Filesystem (' + (files ? files.length : 0) + ' items):</span>' +
+		'<div style="display:flex;gap:6px;">' +
+		'<button type="button" class="btn-mpy-save-main" onclick="QtBlockPy.saveCurrentCodeAsMainPy()" title="Save current blocks/code to run on battery boot"><span class="fa fa-save"></span> Save as main.py</button>' +
+		'<button type="button" class="btn-mpy-action" onclick="QtBlockPy.copyFileFromPcToBoard()" title="Copy a file from your computer to board flash"><span class="fa fa-upload"></span> Copy File to Board</button>' +
+		'</div>' +
+		'</div>';
+
+	if (!files || files.length === 0) {
+		mpyContent.innerHTML = topBarHtml +
+			'<div style="font-size:12px;color:var(--text-secondary);text-align:center;padding:16px 0;background:var(--bg-muted);border-radius:var(--radius-sm);border:1px dashed var(--border-default);">' +
+			'<span class="fa fa-folder-open-o" style="font-size:24px;display:block;margin-bottom:6px;opacity:0.6;"></span>' +
+			'No files currently found on board flash storage.' +
+			'<div style="margin-top:6px;font-size:11px;color:var(--text-tertiary);">Click "Save Code as main.py" to persist your project.</div>' +
+			'</div>';
+		return;
+	}
+
+	var html = topBarHtml;
+	html += '<div style="max-height:160px;overflow-y:auto;border:1px solid var(--border-subtle);border-radius:var(--radius-sm);">';
+	html += '<table class="veda-mpy-table">';
+	html += '<thead><tr>' +
+		'<th style="width:50%;">File Name</th>' +
+		'<th style="width:20%;">Size</th>' +
+		'<th style="width:30%;text-align:right;">Actions</th>' +
+		'</tr></thead><tbody>';
+
+	files.forEach(function (f) {
+		var icon = f.isDir ? 'fa-folder' : (f.name.endsWith('.py') ? 'fa-file-code-o' : 'fa-file-o');
+		var iconColor = f.isDir ? '#f59e0b' : (f.name.endsWith('.py') ? 'var(--color-brand)' : 'var(--text-secondary)');
+		var sizeText = f.isDir ? 'DIR' : (f.size < 1024 ? f.size + ' B' : (f.size / 1024).toFixed(1) + ' KB');
+
+		html += '<tr>' +
+			'<td style="font-weight:500;color:var(--text-primary);"><span class="fa ' + icon + '" style="margin-right:6px;color:' + iconColor + ';"></span>' + f.name + '</td>' +
+			'<td style="color:var(--text-secondary);">' + sizeText + '</td>' +
+			'<td style="text-align:right;">' +
+			(!f.isDir ? '<button type="button" class="btn-mpy-action" title="Open in editor" onclick="QtBlockPy.loadVedaFile(\'' + f.name + '\')"><span class="fa fa-folder-open-o"></span> Open</button> ' : '') +
+			'<button type="button" class="btn-mpy-action btn-mpy-delete" title="Delete file" onclick="QtBlockPy.deleteVedaFile(\'' + f.name + '\')"><span class="fa fa-trash-o"></span></button>' +
+			'</td>' +
+			'</tr>';
+	});
+
+	html += '</tbody></table></div>';
+	mpyContent.innerHTML = html;
+};
+
+QtBlockPy.saveCurrentCodeAsMainPy = async function () {
+	var port = QtBlockPy.selectedVedaPort;
+	if (!port) {
+		alert('No QtPi Veda board connected.');
+		return;
+	}
+
+	var code = '';
+	if (window.localStorage.content === 'off' && window.editor) {
+		code = editor.getValue();
+	} else if (QtBlockPy.workspace) {
+		code = Blockly.Python.workspaceToCode(QtBlockPy.workspace);
+	}
+
+	if (!code || !code.trim()) {
+		alert('No code to save. Write some code or assemble blocks first.');
+		return;
+	}
+
+	await QtBlockPy.stopSerialStream();
+
+	var writer = null;
+	var reader = null;
+	try {
+		QtBlockPy.showFeedbackToast('Writing main.py to board flash...');
+		writer = port.writable.getWriter();
+		reader = port.readable.getReader();
+		var textEncoder = new TextEncoder();
+		var textDecoder = new TextDecoder();
+
+		function readUntil(delimiter, timeoutMs) {
+			return new Promise(function (resolve) {
+				var buffer = '';
+				var timer = setTimeout(function () { resolve(buffer); }, timeoutMs);
+				(async function loop() {
+					try {
+						while (true) {
+							var { value, done } = await reader.read();
+							if (done) break;
+							if (value) {
+								buffer += textDecoder.decode(value);
+								if (buffer.includes(delimiter)) {
+									clearTimeout(timer);
+									resolve(buffer);
+									return;
+								}
+							}
+						}
+					} catch (e) {
+						clearTimeout(timer);
+						resolve(buffer);
+					}
+				})();
+			});
+		}
+
+		await writer.write(textEncoder.encode('\r\x03\x03\x01'));
+		await readUntil('raw REPL', 1200);
+
+		// Write in base64 to prevent escape or newline issues
+		var b64 = btoa(unescape(encodeURIComponent(code)));
+		var writeScript = 
+			'import ubinascii\r\n' +
+			'data = ubinascii.a2b_base64("""' + b64 + '""")\r\n' +
+			'with open("main.py", "wb") as f:\r\n' +
+			' f.write(data)\r\n' +
+			'print("__SAVE_OK__")\r\n';
+
+		await writer.write(textEncoder.encode(writeScript + '\x04'));
+		var resp = await readUntil('__SAVE_OK__', 4000);
+		await writer.write(textEncoder.encode('\x02'));
+
+		writer.releaseLock();
+		reader.releaseLock();
+		writer = null;
+		reader = null;
+
+		if (resp.includes('__SAVE_OK__')) {
+			QtBlockPy.showFeedbackToast('Saved main.py! Will run automatically on board boot.');
+			await QtBlockPy.probeMicroPythonAndFiles();
+		} else {
+			alert('Could not confirm main.py write. Response: ' + resp);
+		}
+	} catch (err) {
+		console.error('Error saving main.py:', err);
+		alert('Failed to write main.py to board: ' + (err.message || err));
+	} finally {
+		if (writer) {
+			try { writer.releaseLock(); } catch (e) {}
+		}
+		if (reader) {
+			try { reader.releaseLock(); } catch (e) {}
+		}
+	}
+};
+
+QtBlockPy.deleteVedaFile = async function (filename) {
+	if (!confirm('Are you sure you want to delete "' + filename + '" from board flash storage?')) {
+		return;
+	}
+
+	var port = QtBlockPy.selectedVedaPort;
+	if (!port) return;
+
+	await QtBlockPy.stopSerialStream();
+
+	var writer = null;
+	var reader = null;
+	try {
+		QtBlockPy.showFeedbackToast('Deleting ' + filename + '...');
+		writer = port.writable.getWriter();
+		reader = port.readable.getReader();
+		var textEncoder = new TextEncoder();
+		var textDecoder = new TextDecoder();
+
+		function readUntil(delimiter, timeoutMs) {
+			return new Promise(function (resolve) {
+				var buffer = '';
+				var timer = setTimeout(function () { resolve(buffer); }, timeoutMs);
+				(async function loop() {
+					try {
+						while (true) {
+							var { value, done } = await reader.read();
+							if (done) break;
+							if (value) {
+								buffer += textDecoder.decode(value);
+								if (buffer.includes(delimiter)) {
+									clearTimeout(timer);
+									resolve(buffer);
+									return;
+								}
+							}
+						}
+					} catch (e) {
+						clearTimeout(timer);
+						resolve(buffer);
+					}
+				})();
+			});
+		}
+
+		await writer.write(textEncoder.encode('\r\x03\x03\x01'));
+		await readUntil('raw REPL', 1200);
+
+		var delScript = 
+			'import uos\r\n' +
+			'try:\r\n' +
+			' uos.remove("' + filename + '")\r\n' +
+			' print("__DEL_OK__")\r\n' +
+			'except Exception as e:\r\n' +
+			' print("__DEL_ERR__" + str(e))\r\n';
+
+		await writer.write(textEncoder.encode(delScript + '\x04'));
+		var resp = await readUntil('__DEL_OK__', 2500);
+		await writer.write(textEncoder.encode('\x02'));
+
+		writer.releaseLock();
+		reader.releaseLock();
+		writer = null;
+		reader = null;
+
+		if (resp.includes('__DEL_OK__')) {
+			QtBlockPy.showFeedbackToast('Deleted ' + filename);
+			await QtBlockPy.probeMicroPythonAndFiles();
+		} else {
+			alert('Could not delete ' + filename + '. Response: ' + resp);
+		}
+	} catch (err) {
+		console.error('Error deleting file:', err);
+		alert('Failed to delete file: ' + (err.message || err));
+	} finally {
+		if (writer) {
+			try { writer.releaseLock(); } catch (e) {}
+		}
+		if (reader) {
+			try { reader.releaseLock(); } catch (e) {}
+		}
+	}
+};
+
+QtBlockPy.loadVedaFile = async function (filename) {
+	var port = QtBlockPy.selectedVedaPort;
+	if (!port) return;
+
+	await QtBlockPy.stopSerialStream();
+
+	var writer = null;
+	var reader = null;
+	try {
+		QtBlockPy.showFeedbackToast('Reading ' + filename + ' from board...');
+		writer = port.writable.getWriter();
+		reader = port.readable.getReader();
+		var textEncoder = new TextEncoder();
+		var textDecoder = new TextDecoder();
+
+		function readUntil(delimiter, timeoutMs) {
+			return new Promise(function (resolve) {
+				var buffer = '';
+				var timer = setTimeout(function () { resolve(buffer); }, timeoutMs);
+				(async function loop() {
+					try {
+						while (true) {
+							var { value, done } = await reader.read();
+							if (done) break;
+							if (value) {
+								buffer += textDecoder.decode(value);
+								if (buffer.includes(delimiter)) {
+									clearTimeout(timer);
+									resolve(buffer);
+									return;
+								}
+							}
+						}
+					} catch (e) {
+						clearTimeout(timer);
+						resolve(buffer);
+					}
+				})();
+			});
+		}
+
+		await writer.write(textEncoder.encode('\r\x03\x03\x01'));
+		await readUntil('raw REPL', 1200);
+
+		var script = 'try:\r\n with open("' + filename + '", "r") as f:\r\n  print("__FC_START__" + f.read() + "__FC_END__")\r\nexcept Exception as e:\r\n print("__FC_ERR__" + str(e))\r\n';
+		await writer.write(textEncoder.encode(script + '\x04'));
+		var resp = await readUntil('__FC_END__', 2500);
+		await writer.write(textEncoder.encode('\x02'));
+
+		var s = resp.indexOf('__FC_START__');
+		var e = resp.indexOf('__FC_END__');
+		if (s !== -1 && e !== -1) {
+			var fileContent = resp.substring(s + '__FC_START__'.length, e);
+			if (window.editor) {
+				editor.setValue(fileContent, 1);
+				$('#codeORblock').prop('checked', false);
+				QtUI.showPane('#content_code');
+				window.localStorage.content = 'off';
+				QtBlockPy.showFeedbackToast('Loaded ' + filename + ' into editor!');
+				var usbModal = document.getElementById('usb');
+				if (usbModal && window.QtUI && window.QtUI.closeDialog) {
+					window.QtUI.closeDialog(usbModal);
+				}
+			}
+		} else {
+			alert('Could not read ' + filename + ' from board.');
+		}
+	} catch (err) {
+		console.error('Failed to load file:', err);
+		alert('Could not read ' + filename + ': ' + (err.message || err));
+	} finally {
+		if (writer) {
+			try { writer.releaseLock(); } catch (e) {}
+		}
+		if (reader) {
+			try { reader.releaseLock(); } catch (e) {}
+		}
+	}
+};
+
+QtBlockPy.showFeedbackToast = function (msg) {
+	var $toast = $('#copy_feedback');
+	if ($toast.length) {
+		$toast.text(msg);
+		$toast.addClass('show');
+		clearTimeout(QtBlockPy._toastTimer);
+		QtBlockPy._toastTimer = setTimeout(function () {
+			$toast.removeClass('show');
+		}, 3000);
+	}
+};
+
+QtBlockPy.updateVedaModalUI = function () {
+	var dot = document.getElementById('veda_status_dot');
+	var text = document.getElementById('veda_status_text');
+	var subEl = document.getElementById('veda_status_sub');
+	var actionContainer = document.getElementById('veda_status_action');
+	var badgeUsb = document.getElementById('badge_usb_connected');
+	var badgeBt = document.getElementById('badge_bt_connected');
+	var rowUsb = document.getElementById('veda_row_usb');
+	var rowBt = document.getElementById('veda_row_bt');
+	var usbAction = document.getElementById('usb_row_action');
+	var btAction = document.getElementById('bt_row_action');
+
+	var activeItem = null;
+	if (QtBlockPy.selectedVedaPort && QtBlockPy.activeVedaPorts.length > 0) {
+		activeItem = QtBlockPy.activeVedaPorts.find(function (it) {
+			return it.port === QtBlockPy.selectedVedaPort;
+		}) || QtBlockPy.activeVedaPorts[0];
+	}
+
+	if (activeItem) {
+		var isBt = (activeItem.match.type === 'bluetooth');
+		if (dot) dot.style.background = isBt ? '#6366f1' : '#10b981';
+		if (text) text.textContent = 'Connected: ' + activeItem.match.name;
+		if (subEl) subEl.textContent = 'Connected via ' + (isBt ? 'Bluetooth Serial (SPP)' : 'USB Data Cable') + ' • Ready for code & flash.';
+		if (actionContainer) {
+			actionContainer.innerHTML = '<button type="button" class="btn-veda-unpair" onclick="QtBlockPy.unpairVedaPort()"><span class="fa fa-unlink"></span> Unpair</button>';
+		}
+
+		var mpySection = document.getElementById('veda_mpy_section');
+		if (mpySection) {
+			mpySection.style.display = 'block';
+			if (QtBlockPy._mpyProbedPort !== activeItem.port) {
+				QtBlockPy._mpyProbedPort = activeItem.port;
+				QtBlockPy.probeMicroPythonAndFiles();
+			}
+		}
+
+		if (badgeUsb) badgeUsb.style.display = isBt ? 'none' : 'inline-block';
+		if (rowUsb) rowUsb.classList.toggle('is-active', !isBt);
+		if (usbAction) {
+			if (!isBt) {
+				usbAction.innerHTML = '<button type="button" class="btn-veda-unpair" onclick="QtBlockPy.unpairVedaPort()"><span class="fa fa-unlink"></span> Unpair</button>';
+			} else {
+				usbAction.innerHTML = '<button id="btn_pair_usb" type="button" class="btn-veda-pair btn-veda-primary" onclick="QtBlockPy.pairVedaPort(\'usb\')"><span class="fa fa-spinner fa-spin" id="pair_usb_spinner" style="display:none;margin-right:6px;"></span><span id="pair_usb_text">Switch to USB</span></button>';
+			}
+		}
+
+		if (badgeBt) badgeBt.style.display = isBt ? 'inline-block' : 'none';
+		if (rowBt) rowBt.classList.toggle('is-active', isBt);
+		if (btAction) {
+			if (isBt) {
+				btAction.innerHTML = '<button type="button" class="btn-veda-unpair" onclick="QtBlockPy.unpairVedaPort()"><span class="fa fa-unlink"></span> Unpair</button>';
+			} else {
+				btAction.innerHTML = '<button id="btn_pair_bluetooth" type="button" class="btn-veda-pair btn-veda-secondary" onclick="QtBlockPy.pairVedaPort(\'bluetooth\')"><span class="fa fa-spinner fa-spin" id="pair_bt_spinner" style="display:none;margin-right:6px;"></span><span id="pair_bt_text">Switch to Bluetooth</span></button>';
+			}
+		}
+	} else {
+		if (dot) dot.style.background = '#94a3b8';
+		if (text) text.textContent = 'No Board Connected';
+		if (subEl) subEl.textContent = 'Choose USB Cable or Bluetooth below to connect your QtPi Veda.';
+		if (actionContainer) actionContainer.innerHTML = '';
+
+		if (badgeUsb) badgeUsb.style.display = 'none';
+		if (rowUsb) rowUsb.classList.remove('is-active');
+		if (usbAction) {
+			usbAction.innerHTML = '<button id="btn_pair_usb" type="button" class="btn-veda-pair btn-veda-primary" onclick="QtBlockPy.pairVedaPort(\'usb\')"><span class="fa fa-spinner fa-spin" id="pair_usb_spinner" style="display:none;margin-right:6px;"></span><span id="pair_usb_text">Pair USB</span></button>';
+		}
+
+		if (badgeBt) badgeBt.style.display = 'none';
+		if (rowBt) rowBt.classList.remove('is-active');
+		if (btAction) {
+			btAction.innerHTML = '<button id="btn_pair_bluetooth" type="button" class="btn-veda-pair btn-veda-secondary" onclick="QtBlockPy.pairVedaPort(\'bluetooth\')"><span class="fa fa-spinner fa-spin" id="pair_bt_spinner" style="display:none;margin-right:6px;"></span><span id="pair_bt_text">Pair Bluetooth</span></button>';
+		}
+	}
+};
+
+QtBlockPy.unpairVedaPort = async function () {
+	try {
+		if (QtBlockPy.selectedVedaPort) {
+			var portToForget = QtBlockPy.selectedVedaPort;
+			try {
+				if (portToForget.close) {
+					await portToForget.close();
+				}
+			} catch (e) {
+				// port was not open
+			}
+			if (portToForget.forget) {
+				await portToForget.forget();
+			}
+		}
+	} catch (err) {
+		console.warn('Unpair warning:', err);
+	}
+
+	await QtBlockPy.stopSerialStream();
+	QtBlockPy.selectedVedaPort = null;
+	QtBlockPy._mpyProbedPort = null;
+	var mpySection = document.getElementById('veda_mpy_section');
+	if (mpySection) mpySection.style.display = 'none';
+	com = 'none';
+	await QtBlockPy.refreshVedaPorts();
+	$('#btn_usb').removeClass('is-connected').attr('title', 'Connect & Pair QtPi Veda Board');
+	QtBlockPy.showFeedbackToast('Disconnected from board');
+
+	var feedbackEl = $('#veda_pair_feedback');
+	feedbackEl.css({
+		'display': 'block',
+		'background': '#f1f5f9',
+		'color': '#475569',
+		'border': '1px solid #cbd5e1'
+	}).html('<strong>✓ Unpaired:</strong> Board has been disconnected.');
+};
+
+QtBlockPy.refreshVedaPorts = async function () {
+	var $portSeries = $('#portseries');
+	if (!navigator.serial) {
+		$portSeries.html('<option value="none">Port: None</option>');
+		return;
+	}
+	try {
+		var allPorts = await navigator.serial.getPorts();
+		QtBlockPy.activeVedaPorts = [];
+		for (var i = 0; i < allPorts.length; i++) {
+			var port = allPorts[i];
+			var info = port.getInfo ? port.getInfo() : {};
+			var match = QtBlockPy.matchVedaBoard(info, port);
+			if (match) {
+				QtBlockPy.activeVedaPorts.push({ port: port, match: match });
+			}
+		}
+
+		$portSeries.empty();
+		if (QtBlockPy.activeVedaPorts.length === 0) {
+			$portSeries.append('<option value="none">Port: None</option>');
+			if (com !== 'webrepl' && com !== 'usb') {
+				com = 'none';
+			}
+			QtBlockPy.selectedVedaPort = null;
+			$('#btn_usb').removeClass('is-connected').attr('title', 'Connect & Pair QtPi Veda Board');
+		} else {
+			for (var j = 0; j < QtBlockPy.activeVedaPorts.length; j++) {
+				var item = QtBlockPy.activeVedaPorts[j];
+				var label = item.match.label + (QtBlockPy.activeVedaPorts.length > 1 ? ' (' + (j + 1) + ')' : '');
+				$portSeries.append('<option value="veda_' + j + '">' + label + '</option>');
+			}
+			$portSeries.val('veda_0');
+			QtBlockPy.selectedVedaPort = QtBlockPy.activeVedaPorts[0].port;
+			com = 'veda_serial';
+			var firstMatch = QtBlockPy.activeVedaPorts[0].match;
+			$('#btn_usb').addClass('is-connected').attr('title', 'Connected via ' + (firstMatch.type === 'bluetooth' ? 'Bluetooth (SPP)' : 'USB') + ': ' + firstMatch.name);
+		}
+		QtBlockPy.updateVedaModalUI();
+	} catch (err) {
+		console.warn('Could not list serial ports:', err);
+	}
+};
+
+QtBlockPy.pairVedaPort = async function (type) {
+	if (!navigator.serial) {
+		alert('Web Serial is not supported in this browser. Please run inside QtPi Desktop Suite.');
+		return;
+	}
+
+	var isUsb = (type === 'usb');
+	var btnId = isUsb ? '#btn_pair_usb' : '#btn_pair_bluetooth';
+	var textId = isUsb ? '#pair_usb_text' : '#pair_bt_text';
+	var spinnerId = isUsb ? '#pair_usb_spinner' : '#pair_bt_spinner';
+	var feedbackEl = $('#veda_pair_feedback');
+
+	$(btnId).prop('disabled', true);
+	$(spinnerId).show();
+	$(textId).text(isUsb ? 'Connecting USB...' : 'Scanning BT...');
+	feedbackEl.hide().empty();
+
+	try {
+		var requestOptions = isUsb ? { filters: QtBlockPy.VEDA_USB_FILTERS } : {};
+		var port;
+		try {
+			port = await navigator.serial.requestPort(requestOptions);
+		} catch (portErr) {
+			if (isUsb && portErr.name === "NotFoundError") {
+				// Retry without filter in case board vendorId varies
+				port = await navigator.serial.requestPort({});
+			} else {
+				throw portErr;
+			}
+		}
+		await QtBlockPy.refreshVedaPorts();
+
+		if (QtBlockPy.activeVedaPorts.length > 0) {
+			var latestIdx = QtBlockPy.activeVedaPorts.length - 1;
+			$('#portseries').val('veda_' + latestIdx);
+			QtBlockPy.selectedVedaPort = QtBlockPy.activeVedaPorts[latestIdx].port;
+			com = 'veda_serial';
+			var chosen = QtBlockPy.activeVedaPorts[latestIdx];
+			var connType = chosen.match.type === 'bluetooth' ? 'Bluetooth Serial (SPP)' : 'USB Cable';
+			$('#btn_usb').addClass('is-connected').attr('title', 'Connected via ' + connType + ': ' + chosen.match.name);
+			QtBlockPy.showFeedbackToast('Connected: ' + chosen.match.name);
+
+			feedbackEl.css({
+				'display': 'block',
+				'background': '#d1fae5',
+				'color': '#065f46',
+				'border': '1px solid #a7f3d0'
+			}).html('<strong>✓ Connected:</strong> ' + chosen.match.name + ' via ' + connType + '.');
+		}
+	} catch (err) {
+		if (err.name !== 'NotFoundError') {
+			console.error('Serial port pairing error:', err);
+		}
+		var guidanceMsg = isUsb
+			? '<strong>⚠️ No USB Board Detected:</strong><br/>• Connect your QtPi Veda board using a <strong>USB data cable</strong> (charge-only cables will not communicate).<br/>• Verify that the board power switch is turned <strong>ON</strong>.<br/>• If macOS prompts with <em>"Allow accessory to connect"</em>, click <strong>Allow</strong>.'
+			: '<strong>⚠️ No Bluetooth Board Available:</strong><br/>• Ensure your QtVeda device (e.g. <strong>QtVedaV3-0123</strong>) is turned ON.<br/>• Check macOS <em>System Settings > Bluetooth</em> to ensure it is paired and connected.';
+
+		feedbackEl.css({
+			'display': 'block',
+			'background': '#fee2e2',
+			'color': '#991b1b',
+			'border': '1px solid #fecaca'
+		}).html(guidanceMsg);
+	} finally {
+		$(btnId).prop('disabled', false);
+		$(spinnerId).hide();
+		$(textId).text(isUsb ? 'Pair USB' : 'Pair Bluetooth');
+		QtBlockPy.updateVedaModalUI();
+	}
+};
+
 QtBlockPy.save_com = function () {
 	$("#portseries").blur();
-	com = $("#portseries").val();
-	//window.localStorage.com = com;
+	var selected = $("#portseries").val();
+	if (selected && selected.startsWith('veda_')) {
+		var idx = parseInt(selected.split('_')[1], 10);
+		if (QtBlockPy.activeVedaPorts[idx]) {
+			var chosen = QtBlockPy.activeVedaPorts[idx];
+			QtBlockPy.selectedVedaPort = chosen.port;
+			com = 'veda_serial';
+			$('#btn_usb').addClass('is-connected').attr('title', 'Connected via ' + (chosen.match.type === 'bluetooth' ? 'Bluetooth (SPP)' : 'USB') + ': ' + chosen.match.name);
+			QtBlockPy.updateVedaModalUI();
+			QtBlockPy.showFeedbackToast('Selected ' + chosen.match.label);
+		}
+	} else {
+		com = selected;
+		QtBlockPy.selectedVedaPort = null;
+		$('#btn_usb').removeClass('is-connected').attr('title', 'Connect & Pair QtPi Veda Board');
+		QtBlockPy.updateVedaModalUI();
+	}
 };
+
+QtBlockPy.uploadToVeda = async function () {
+	if (!QtBlockPy.selectedVedaPort) {
+		var usbDialog = document.getElementById('usb');
+		if (usbDialog && window.QtUI && window.QtUI.openDialog) {
+			window.QtUI.openDialog(usbDialog, document.getElementById('btn_flash'));
+		}
+		return;
+	}
+
+	QtBlockPy.openTerminalDrawer();
+	outf('\n----------------------------------------\n');
+	outf('>> [QtPi Veda] Preparing upload to board...\n');
+
+	var code = '';
+	if (window.localStorage.content === 'off' && window.editor) {
+		code = editor.getValue();
+	} else if (QtBlockPy.workspace) {
+		code = Blockly.Python.workspaceToCode(QtBlockPy.workspace);
+	}
+
+	if (!code || !code.trim()) {
+		outf('>> [QtPi Veda] Error: No code to upload! Add some blocks or write Python code first.\n');
+		return;
+	}
+
+	try {
+		await QtBlockPy.stopSerialStream();
+		var port = QtBlockPy.selectedVedaPort;
+		if (!port.readable || !port.writable) {
+			outf('>> [QtPi Veda] Opening serial connection at 115200 baud...\n');
+			await port.open({ baudRate: 115200 });
+		}
+
+		outf('>> [QtPi Veda] Serial connected. Uploading Python script...\n');
+		var textEncoder = new TextEncoder();
+		var writer = port.writable.getWriter();
+
+		// MicroPython raw REPL interrupt: Ctrl-C, Ctrl-C, Ctrl-A
+		await writer.write(textEncoder.encode('\r\x03\x03\x01'));
+		await new Promise(function(r) { setTimeout(r, 200); });
+
+		// Send code followed by Ctrl-D to execute
+		await writer.write(textEncoder.encode(code + '\r\n\x04'));
+		writer.releaseLock();
+
+		outf('>> [QtPi Veda] Program uploaded successfully and running on board!\n');
+		outf('----------------------------------------\n');
+
+		if (port.readable) {
+			var reader = port.readable.getReader();
+			QtBlockPy._activeReader = reader;
+			var textDecoder = new TextDecoder();
+			(async function readLoop() {
+				try {
+					while (true) {
+						var { value, done } = await reader.read();
+						if (done) break;
+						if (value) {
+							outf(textDecoder.decode(value));
+						}
+					}
+				} catch (e) {
+					// stream ended
+				} finally {
+					reader.releaseLock();
+				}
+			})();
+		}
+	} catch (err) {
+		outf('>> [QtPi Veda] Upload error: ' + (err.message || err) + '\n');
+		console.error('Veda upload error:', err);
+	}
+};
+
 QtBlockPy.renderCodePreview = function () {
 	var prog = window.localStorage.prog;
 	var card = window.localStorage.card;
@@ -219,8 +1115,8 @@ QtBlockPy.load = function (event) {
 		var target = event.target;
 		if (target.readyState == 2) {
 			if (files[0].name.endsWith("ino")) {
-				$('#codeORblock').bootstrapToggle("off");
-				$('a[href="#content_code"]').tab('show');
+				QtUI.setToggle("#codeORblock", "off");
+				QtUI.showPane("#content_code");
 				$('#btn_print').addClass("hidden");
 				$('#btn_preview').addClass("hidden");
 				$('#btn_search').removeClass("hidden");
@@ -234,8 +1130,8 @@ QtBlockPy.load = function (event) {
 				editor.setValue(target.result, 1);
 			}
 			if (files[0].name.endsWith("py")) {
-				$('#codeORblock').bootstrapToggle("off");
-				$('a[href="#content_code"]').tab('show');
+				QtUI.setToggle("#codeORblock", "off");
+				QtUI.showPane("#content_code");
 				$('#btn_print').addClass("hidden");
 				$('#btn_preview').addClass("hidden");
 				$('#btn_search').removeClass("hidden");
@@ -290,16 +1186,16 @@ QtBlockPy.loadConfig = function () {
 	}
 	if (content === undefined) {
 		window.localStorage.content = QtBlockPy.content;
-		$('#codeORblock').bootstrapToggle(QtBlockPy.content);
+		QtUI.setToggle("#codeORblock", QtBlockPy.content);
 		$('#btn_search').addClass("hidden");
 		$('#btn_run_custom').addClass("hidden");
 		$('#btn_stop_custom').addClass("hidden");
 
 	}
 	else {
-		$('#codeORblock').bootstrapToggle(content);
+		QtUI.setToggle("#codeORblock", content);
 		if (content == "off") {
-			$('a[href="#content_code"]').tab('show');
+			QtUI.showPane("#content_code");
 			$('#btn_search').removeClass("hidden");
 			$('#btn_run_custom').removeClass("hidden");
 			$('#btn_stop_custom').addClass("hidden");
@@ -341,13 +1237,12 @@ QtBlockPy.change_card = function () {
 		buttons: {
 			ok: {
 				text: "ok!",
-				btnClass: 'btn-primary',
+				btnClass: 'dialog-primary-button',
 				keys: ['enter'],
 				action: function () {
 					console.log('the user clicked confirm');
-					$('#portseries').html('');
-					$('#portseries').append('<option value="none">None</option>');
 					QtBlockPy.handleConfirm(new_card);
+					QtBlockPy.refreshVedaPorts();
 				}
 			},
 			cancel: function () {
@@ -428,13 +1323,17 @@ QtBlockPy.search = function () {
 };
 QtBlockPy.bindFunctions = function () {
 	console.log("bindFunctions inside");
-	$('.modal-child').on('show.bs.modal', function () {
-		var modalParent = $(this).attr('data-modal-parent');
-		$(modalParent).css('opacity', 0);
+	$('#btn_pair_usb').on("click", function (e) {
+		e.preventDefault();
+		QtBlockPy.pairVedaPort('usb');
 	});
-	$('.modal-child').on('hidden.bs.modal', function () {
-		var modalParent = $(this).attr('data-modal-parent');
-		$(modalParent).css('opacity', 1);
+	$('#btn_pair_bluetooth').on("click", function (e) {
+		e.preventDefault();
+		QtBlockPy.pairVedaPort('bluetooth');
+	});
+	$('#btn_usb').on("click", function (e) {
+		e.preventDefault();
+		QtBlockPy.pairVedaPort();
 	});
 	$('#btn_new').on("click", QtBlockPy.discard);
 	$('#btn_undo').on("click", QtBlockPy.Undo);
@@ -472,24 +1371,16 @@ QtBlockPy.bindFunctions = function () {
 		e.preventDefault();
 		QtBlockPy.closeTerminalDrawer();
 	});
-	$('#btn_stop').on("click", function () {
-		$('#btn_run').removeClass("hidden");
-		$('#btn_stop').addClass("hidden");
-	});
-	$('#btn_stop_custom').on("click", function () {
-		$('#btn_run_custom').removeClass("hidden");
-		$('#btn_stop_custom').addClass("hidden");
-	});
+	$('#btn_stop').on("click", QtBlockPy.stopExecution);
+	$('#btn_stop_custom').on("click", QtBlockPy.stopExecution);
 	$('#btn_run').on("click", function () {
 		exe_type = "blocks";
-		$('#btn_stop').removeClass("hidden");
 		QtBlockPy.openTerminalDrawer();
 	});
 
 	//btn_run_custom
 	$('#btn_run_custom').on("click", function () {
 		exe_type = "custom";
-		$('#btn_stop_custom').removeClass("hidden");
 		QtBlockPy.openTerminalDrawer();
 	});
 	$('#btn_flash').on("click", function () {
@@ -498,6 +1389,17 @@ QtBlockPy.bindFunctions = function () {
 		}
 		else if (com == "usb") {
 			$('#toggle_microbit').toggle("slide");
+		}
+		else if (com == "veda_serial") {
+			QtBlockPy.uploadToVeda();
+		}
+		else {
+			var usbDialog = document.getElementById('usb');
+			if (usbDialog && window.QtUI && window.QtUI.openDialog) {
+				window.QtUI.openDialog(usbDialog, this);
+			} else if (usbDialog) {
+				$(usbDialog).addClass('is-open');
+			}
 		}
 	});
 	//$('#btn_connect').on("click", QtBlockPy.webrepl_button_clicked);
@@ -526,7 +1428,7 @@ QtBlockPy.bindFunctions = function () {
 				editor.setValue($('#pre_preview').text(), 1);
 			}
 
-			$('a[href="#content_code"]').tab('show');
+			QtUI.showPane("#content_code");
 			QtBlockPy.closeCodePreview();
 			$('#btn_print').addClass("hidden");
 			$('#btn_preview').addClass("hidden");
@@ -537,7 +1439,7 @@ QtBlockPy.bindFunctions = function () {
 			$('#btn_save_custom_py').removeClass('hidden');
 			window.localStorage.content = "off";
 		} else {
-			$('a[href="#content_blocks"]').tab('show');
+			QtUI.showPane("#content_blocks");
 			$('#btn_print').removeClass("hidden");
 			$('#btn_preview').removeClass("hidden");
 			$('#btn_run').removeClass("hidden");
@@ -549,26 +1451,11 @@ QtBlockPy.bindFunctions = function () {
 		}
 	});
 
-	$('#btn_verify').mouseover(function () {
-		document.getElementById("survol").textContent = "Check the code";
-	}).mouseout(function () {
-		document.getElementById("survol").textContent = "";
-	});
-	$('#btn_flash').mouseover(function () {
-		document.getElementById("survol").textContent = "Upload to board";
-	}).mouseout(function () {
-		document.getElementById("survol").textContent = "";
-	});
-	$('#btn_bin').mouseover(function () {
-		document.getElementById("survol").textContent = "Export as Binary .hex";
-	}).mouseout(function () {
-		document.getElementById("survol").textContent = "";
-	});
 	$('#toolboxes').on("focus", function () {
 		QtBlockPy.selectedToolbox = $(this).val();
 	});
 	$('#toolboxes').on("change", QtBlockPy.changeToolboxDefinition);
-	$('#configModal').on('hidden.bs.modal', function (e) {
+	$('#configModal').on('qtui:dialog-close', function () {
 		QtBlockPy.loadToolboxDefinition(QtBlockPy.selectedToolbox);
 	});
 	$('#load').on("change", QtBlockPy.load);
@@ -643,17 +1530,15 @@ QtBlockPy.changeToolbox = function () {
 	window.localStorage.toolboxids = toolboxIds;
 	Blockly.getMainWorkspace().updateToolbox(QtBlockPy.buildToolbox());
 	QtBlockPy.workspace.render();
-	$('#configModal').modal('hide');
+	QtUI.closeDialog(document.getElementById("configModal"));
 	window.location.reload();
 };
 QtBlockPy.buildToolbox = function () {
 	var loadIds = window.localStorage.toolboxids;
-	console.log("buildToolbox defaultcat", loadIds);
 	if (loadIds === undefined || loadIds === "") {
 		if ($('#defaultCategories').length) {
 			loadIds = $('#defaultCategories').html();
 		} else {
-			console.log("defaultids");
 			loadIds = '';
 		}
 	}
@@ -691,6 +1576,65 @@ QtBlockPy.changeToolboxDefinition = function () {
 	QtBlockPy.loadToolboxDefinition($("#toolboxes").val());
 	QtBlockPy.openConfigToolbox();
 };
+QtBlockPy.openExternalLink = function (url, event) {
+	if (event) {
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	if (!url) return;
+	var electronAPI = window.electronAPI || (window.parent && window.parent.electronAPI);
+	if (electronAPI && typeof electronAPI.openExternal === 'function') {
+		electronAPI.openExternal(url);
+	} else {
+		window.open(url, '_blank', 'noopener,noreferrer');
+	}
+};
+
+QtBlockPy.loadExampleProject = function (sourceUrl) {
+	var fullUrl = "./examples/" + sourceUrl;
+	$.get(fullUrl, function (data) {
+		if (sourceUrl.endsWith(".xml")) {
+			if (QtBlockPy.workspace) {
+				QtBlockPy.workspace.clear();
+			}
+			QtBlockPy.loadBlocks(data);
+			$('#codeORblock').prop("checked", true);
+			window.localStorage.content = "on";
+			QtUI.showPane("#content_blocks");
+			$('#btn_print').removeClass("hidden");
+			$('#btn_preview').removeClass("hidden");
+			$('#btn_run').removeClass("hidden");
+			$('#btn_run_custom').addClass("hidden");
+			$('#btn_stop').addClass("hidden");
+			$('#btn_stop_custom').addClass("hidden");
+			$('#btn_search').addClass("hidden");
+			$('#btn_save_custom_py').addClass('hidden');
+			if (window.editor && QtBlockPy.workspace) {
+				var code = Blockly.Python.workspaceToCode(QtBlockPy.workspace);
+				editor.setValue(code, 1);
+			}
+			QtBlockPy.renderCodePreview();
+		} else if (sourceUrl.endsWith(".py")) {
+			$('#codeORblock').prop("checked", false);
+			window.localStorage.content = "off";
+			QtUI.showPane("#content_code");
+			$('#btn_print').addClass("hidden");
+			$('#btn_preview').addClass("hidden");
+			$('#btn_run').addClass("hidden");
+			$('#btn_stop').addClass("hidden");
+			$('#btn_stop_custom').addClass("hidden");
+			$('#btn_search').removeClass("hidden");
+			$('#btn_run_custom').removeClass("hidden");
+			$('#btn_save_custom_py').removeClass('hidden');
+			if (window.editor) {
+				editor.session.setMode("ace/mode/python");
+				editor.setValue(data, 1);
+			}
+		}
+		QtUI.closeDialog(document.getElementById("exampleModal"));
+	}, 'text');
+};
+
 QtBlockPy.buildExamples = function () {
 	$.ajax({
 		cache: false,
@@ -700,11 +1644,22 @@ QtBlockPy.buildExamples = function () {
 			$("#includedContent").empty();
 			$.each(data, function (i, example) {
 				if (example.visible) {
-					var line = "<tr><td>"
-						+ "<a href='?url=./examples/" + example.source_url + "'>" + example.source_text + "</a>"
-						+ "</td><td>"
-						+ "<a href='" + example.link_url + "' data-toggle='modal'>"
-						+ "<img class='vignette' src='./examples/" + example.image + "'></a>"
+					var actionHtml = "";
+					if (example.link_url) {
+						actionHtml = "<a href='" + example.link_url + "' class='example-action-btn' title='Watch Tutorial' onclick='QtBlockPy.openExternalLink(\"" + example.link_url + "\", event)'>"
+							+ "<span class='fa fa-youtube-play'></span> Tutorial"
+							+ "</a>";
+					}
+					if (example.image) {
+						actionHtml += "<img class='vignette' src='./examples/" + example.image + "' alt='preview' />";
+					}
+					var line = "<tr class='example-item-row'><td class='example-title-col'>"
+						+ "<a href='javascript:void(0)' onclick='QtBlockPy.loadExampleProject(\"" + example.source_url + "\")' class='example-project-link' title='Open Example Project'>"
+						+ "<span class='example-icon-badge'><i class='fa fa-folder-open'></i></span> "
+						+ "<span class='example-name'>" + example.source_text + "</span>"
+						+ "</a>"
+						+ "</td><td class='example-action-col'>"
+						+ actionHtml
 						+ "</td></tr>";
 					$("#includedContent").append(line);
 				}
@@ -1146,33 +2101,50 @@ function builtinRead (x) {
 	return Sk.builtinFiles["files"][x];
 }
 
+QtBlockPy.isExecuting = false;
+QtBlockPy.stopRequested = false;
+
+QtBlockPy.stopExecution = function () {
+	if (QtBlockPy.isExecuting) {
+		QtBlockPy.stopRequested = true;
+		outf('\n>> Execution stopped by user.\n');
+	}
+	QtBlockPy.cleanupExecution();
+};
+
+QtBlockPy.cleanupExecution = function () {
+	QtBlockPy.isExecuting = false;
+	QtBlockPy.stopRequested = false;
+	$('#btn_stop').addClass("hidden");
+	$('#btn_stop_custom').addClass("hidden");
+	if (window.localStorage.content == "off") {
+		$('#btn_run_custom').removeClass("hidden");
+		$('#btn_run').addClass("hidden");
+	} else {
+		$('#btn_run').removeClass("hidden");
+		$('#btn_run_custom').addClass("hidden");
+	}
+};
+
 function runit () {
 	var lang_type = window.localStorage.card;
 	if (lang_type == "javascript") {
-		window.alert("JS");
 		var script = Blockly.JavaScript.workspaceToCode(Blockly.getMainWorkspace());
 		var blockp5 = new Blockp5(script);
 		blockp5.runCode();
 		console.log("Running JS");
 	}
 	else {
-		window.alert("Python");
 		if (exe_type == 'blocks') {
 			var prog = Blockly.Python.workspaceToCode(Blockly.getMainWorkspace());
 		}
 		else if (exe_type == "custom") {
 			var prog = editor.getValue();
 		}
-		/*var code = Blockly.JavaScript.workspaceToCode(Code.workspace);
-		try {
-			eval(code);
-		} catch (e) {
-			alert(MSG['badCode'].replace('%1', e));
-		}*/
+
 		var mypre = document.getElementById("console");
 		mypre.innerHTML = '';
 		Sk.pre = "output";
-		//Sk.configure({ output: outf, read: builtinRead });
 		Sk.configure({
 			inputfun: function (prompt) {
 				return window.prompt(prompt);
@@ -1181,24 +2153,54 @@ function runit () {
 			output: outf,
 			read: builtinRead
 		});
+
+		QtBlockPy.isExecuting = true;
+		QtBlockPy.stopRequested = false;
+		Sk.yieldLimit = 100;
+
+		$('#btn_run').addClass("hidden");
+		$('#btn_run_custom').addClass("hidden");
+		if (exe_type == "custom") {
+			$('#btn_stop_custom').removeClass("hidden");
+			$('#btn_stop').addClass("hidden");
+		} else {
+			$('#btn_stop').removeClass("hidden");
+			$('#btn_stop_custom').addClass("hidden");
+		}
+
 		var myPromise = Sk.misceval.asyncToPromise(function () {
 			return Sk.importMainWithBody("<stdin>", false, prog, true);
+		}, {
+			"*": function (susp) {
+				if (QtBlockPy.stopRequested) {
+					throw new Error("Execution stopped by user");
+				}
+			}
 		});
+
 		myPromise.then(function (mod) {
-			outf('>> successfully executed');
+			if (!QtBlockPy.stopRequested) {
+				outf('\n>> successfully executed\n');
+			}
+			QtBlockPy.cleanupExecution();
 		},
 			function (err) {
-				let ret = err.toString(); // Simple output message
-				// Create stacktrace message
-				if (err.traceback) {
-					for (let i = 0; i < err.traceback.length; i++) {
-						ret += "\n  at " + " line " + err.traceback[i].lineno;
-						if ("colno" in err.traceback[i]) {
-							ret += " column " + err.traceback[i].colno;
+				if (!QtBlockPy.stopRequested) {
+					let ret = err.toString();
+					if (err.traceback) {
+						for (let i = 0; i < err.traceback.length; i++) {
+							ret += "\n  at " + " line " + err.traceback[i].lineno;
+							if ("colno" in err.traceback[i]) {
+								ret += " column " + err.traceback[i].colno;
+							}
 						}
 					}
+					outf("\nerr >> " + ret.toString() + "\n");
+					if (ret.includes("No module named uqtpy")) {
+						outf("\n💡 Note: 'uqtpy' is the QtPi Neo board library.\nTo run on physical hardware:\n1. Connect your QtPi Neo board with USB\n2. Select your Port in the top navbar\n3. Click the Upload arrow (➔) to flash and run on the board!\n");
+					}
 				}
-				outf("err >> " + ret.toString());
+				QtBlockPy.cleanupExecution();
 			});
 	}
 }
@@ -1411,7 +2413,6 @@ function pythonEditor (id, autocompleteApi) {
 	return editor;
 }
 /* Attach to the global object if running in node */
-console.log(typeof module);
 if (typeof module !== 'undefined' && module.exports) {
 	global.pythonEditor = pythonEditor;
 }
@@ -1435,7 +2436,6 @@ function translations () {
 			translateEmbedStrings(language);
 			callback(language);
 		};
-		console.log(document.getElementById(elementId).src);
 		if (endsWithURL.test(document.getElementById(elementId).src)) {
 			// The request newLang is the current one, don't reload js file
 			return runCallback(language);
@@ -1447,8 +2447,7 @@ function translations () {
 			document.getElementById(elementId).onload = runCallback;
 		} else {
 			// Don't throw an error, but inform the console
-			runCallback();
-			console.error('Requested language not available: ' + newLang);
+			console.warn("Language " + newLang + " is not supported.");
 		}
 	}
 
@@ -1493,7 +2492,6 @@ function translations () {
 			}
 		}
 	}
-	console.log("updated lang: ", updateLang);
 	return {
 		'updateLang': updateLang
 	};
@@ -1619,24 +2617,7 @@ function web_editor (config) {
 		// Set version in document title
 		document.title = document.title + ' ' + EDITOR_VERSION;
 		// Setup the Ace editor.
-		if (message.n && message.c && message.s) {
-			var template = $('#decrypt-template').html();
-			Mustache.parse(template);
-			var context = config.translate.decrypt;
-			if (message.h) {
-				context.hint = '(Hint: ' + decodeURIComponent(message.h) + ')';
-			}
-			vex.open({
-				content: Mustache.render(template, context)
-			});
-			$('#button-decrypt-link').click(function () {
-				var password = $('#passphrase').val();
-				setName(EDITOR.decrypt(password, message.n));
-				EDITOR.setCode(EDITOR.decrypt(password, message.s));
-				vex.close();
-				EDITOR.focus();
-			});
-		} else if (migration != null) {
+		if (migration != null) {
 			setName(migration.meta.name);
 			EDITOR.setCode(migration.source);
 			EDITOR.focus();
@@ -1879,10 +2860,10 @@ function web_editor (config) {
 		return fullHex;
 	}
 
-	// Trap focus in modal and pass focus to first actionable element
-	function focusModal (modalId) {
+	// Trap focus in an overlay and pass focus to its first actionable element.
+	function focusOverlay (overlayId) {
 		document.querySelector('body > :not(.vex)').setAttribute('aria-hidden', true);
-		var dialog = document.querySelector(modalId);
+		var dialog = document.querySelector(overlayId);
 		var focusableEls = dialog.querySelectorAll('a[href]:not([disabled]), button:not([disabled]), textarea:not([disabled]), input[type="text"]:not([disabled]), input[type="radio"]:not([disabled]), input[type="checkbox"]:not([disabled]), select:not([disabled])');
 		$(focusableEls).each(function () {
 			$(this).attr('tabindex', '0');
@@ -2016,7 +2997,7 @@ function web_editor (config) {
 	}
 
 	function webusbErrorHandler (err) {
-		// Display error handler modal
+		// Display the WebUSB error overlay.
 		$("#flashing-overlay-container").css("display", "flex");
 		$("#flashing-info").addClass('hidden');
 
@@ -2134,9 +3115,9 @@ function web_editor (config) {
 		// Attach download handler
 		//$("#flashing-overlay-download").click(doDownload);
 
-		// Make the modal accessible now that all the content is present
-		focusModal("#flashing-overlay");
-		// If escape key is pressed close modal
+		// Make the overlay accessible now that all the content is present.
+		focusOverlay("#flashing-overlay");
+		// If escape is pressed, close the overlay.
 		$('#flashing-overlay').keydown(function (e) {
 			if (e.which == 27) {
 				flashErrorClose();
@@ -2413,7 +3394,7 @@ function web_editor (config) {
 			});
 		}
 		$("#modal-msg-links").html((modalLinks).join(' | '));
-		focusModal("#modal-msg-overlay");
+		focusOverlay("#modal-msg-overlay");
 		var modalMsgClose = function () {
 			$(overlayContainer).hide();
 			$(overlayContainer).off("keydown");
@@ -2583,10 +3564,8 @@ function web_editor (config) {
 			return;
 		}
 		// Safari before v10 had issues downloading the file blob
-		if ($.browser.safari && ($.browser.versionNumber < 10)) {
-			alert(config.translate.alerts.download);
-			window.open('data:application/octet;charset=utf-8,' + encodeURIComponent(output), '_newtab');
-			return;
+		if (window.navigator && /safari/i.test(navigator.userAgent) && !/chrome/i.test(navigator.userAgent)) {
+			// modern safari handles blobs fine
 		}
 		// This works in all other browser
 		var filename = getSafeName();

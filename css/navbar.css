@@ -59,6 +59,8 @@
 
 .navbar-left {
   flex-shrink: 0;
+  margin-left: 0 !important;
+  float: none !important;
 }
 
 .navbar-center {
@@ -67,8 +69,11 @@
 }
 
 .navbar-right {
+  position: relative;
   flex-shrink: 0;
   gap: var(--space-2);
+  margin-right: 0 !important;
+  float: none !important;
 }
 
 /* --- Brand Logo --- */
@@ -176,19 +181,44 @@
 }
 
 .nav-select-group .btn-nav-attached {
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  background-color: var(--bg-muted);
-  border-right: 1px solid var(--border-subtle);
+  /* Strip all framework button defaults that bleed through */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 9px !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  /* Attached-button specific */
+  border-right: 1px solid var(--border-subtle) !important;
+  background-color: var(--bg-muted) !important;
   color: var(--text-secondary);
-  padding: 0 9px;
   height: 100%;
+}
+
+/* Suppress generic .btn-nav:hover border/shadow leak inside the group */
+.nav-select-group .btn-nav-attached:hover,
+.nav-select-group .btn-nav-flash:hover {
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .nav-select-group .btn-nav-attached:hover {
   background-color: var(--bg-active);
   color: var(--text-primary);
+}
+
+.nav-select-group .btn-nav-attached.is-connected {
+  color: #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
+
+.nav-select-group .btn-nav-attached.is-connected:hover {
+  background-color: rgba(16, 185, 129, 0.16) !important;
+  color: #059669 !important;
 }
 
 .nav-select-group .nav-select {
@@ -206,44 +236,126 @@
 }
 
 .nav-select-group .btn-nav-flash {
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  background-color: var(--bg-muted);
-  border-left: 1px solid var(--border-subtle);
-  color: var(--color-brand);
-  padding: 0 10px;
+  /* Strip all framework button defaults that bleed through */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 10px !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  /* Flash-button specific */
+  border-left: 1px solid var(--border-subtle) !important;
+  background-color: var(--bg-muted) !important;
+  color: var(--color-brand) !important;
   height: 100%;
-  transition: all var(--transition-fast);
+  width: 34px;
+  min-width: 34px;
+  flex: 0 0 34px;
+  box-sizing: border-box;
+  transition: none;
 }
 
 .nav-select-group .btn-nav-flash:hover {
-  background-color: var(--color-brand);
-  color: var(--text-inverse);
+  background-color: var(--color-brand) !important;
+  color: var(--text-inverse) !important;
+  /* Keep the exact resting border geometry and paint during hover. */
+  border-left-color: var(--border-subtle) !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
-/* --- Mode Toggle Wrapper --- */
+.nav-select-group .btn-nav-flash .fa {
+  display: block;
+  pointer-events: none;
+}
+
+/* --- Modern Pure CSS Mode Toggle --- */
 .mode-toggle-wrapper {
   display: inline-flex;
   align-items: center;
 }
 
-.mode-toggle-wrapper .toggle.nav-toggle {
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: var(--text-xs);
-  height: 32px !important;
-  min-height: 32px !important;
-  box-shadow: var(--shadow-xs);
+.mode-toggle-switch {
+  position: relative;
+  display: inline-flex;
+  margin: 0;
+  cursor: pointer;
+  user-select: none;
 }
 
-.mode-toggle-wrapper .toggle-handle {
+.mode-toggle-switch input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.mode-toggle-track {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  height: 32px;
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  box-sizing: border-box;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.mode-toggle-option {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 12px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.mode-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc(50% - 2px);
+  background-color: var(--bg-surface);
   border-radius: var(--radius-sm);
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12), 0 1px 2px rgba(15, 23, 42, 0.06);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+  z-index: 1;
+}
+
+/* Checked state = Blocks mode (left active) */
+.mode-toggle-switch input[type="checkbox"]:checked ~ .mode-toggle-track .mode-blocks {
+  color: var(--color-brand);
+}
+
+.mode-toggle-switch input[type="checkbox"]:checked ~ .mode-toggle-track .mode-toggle-thumb {
+  transform: translateX(0);
+}
+
+/* Unchecked state = Code mode (right active) */
+.mode-toggle-switch input[type="checkbox"]:not(:checked) ~ .mode-toggle-track .mode-code {
+  color: var(--color-brand);
+}
+
+.mode-toggle-switch input[type="checkbox"]:not(:checked) ~ .mode-toggle-track .mode-toggle-thumb {
+  transform: translateX(100%);
+}
+
+.mode-toggle-switch:hover .mode-toggle-track {
+  border-color: var(--border-default);
 }
 
 /* --- Primary Execution Actions (Run & Stop) --- */
@@ -324,21 +436,218 @@
 }
 
 /* --- Status Hint Tooltip --- */
-.navbar-status-hint {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  background-color: var(--bg-muted);
-  border: 1px solid var(--border-subtle);
-  padding: 2px 8px;
-  border-radius: var(--radius-xs);
-  max-width: 140px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: inline-block;
-  vertical-align: middle;
+/* Hide navbar preview button (superseded by `< Code` collapsible handle tab on the workspace edge) */
+.btn-preview-toggle {
+  display: none !important;
 }
 
-.navbar-status-hint:empty {
-  display: none;
+/* ==========================================================================
+   Responsive Adaptations for Narrow Viewports & Embedded Sidebar
+   ========================================================================== */
+
+@media (max-width: 1280px) {
+  #header.app-navbar {
+    padding: 0 var(--space-2);
+  }
+
+  .navbar-left,
+  .navbar-center,
+  .navbar-right {
+    gap: 6px;
+  }
+
+  .btn-nav {
+    height: 30px;
+    min-width: 30px;
+    padding: 0 6px;
+  }
+
+  .nav-select-group {
+    height: 30px;
+  }
+
+  .nav-select-group .btn-nav-attached,
+  .nav-select-group .btn-nav-flash {
+    padding: 0 6px;
+  }
+
+  .nav-select-group .nav-select {
+    min-width: 80px;
+    font-size: 11.5px;
+    padding: 0 6px;
+  }
+
+  .mode-toggle-switch {
+    width: auto;
+    height: 30px;
+  }
+
+  .mode-toggle-track {
+    height: 30px;
+  }
+
+  .mode-toggle-option {
+    height: 24px;
+    padding: 0 10px;
+    font-size: 11.5px;
+    gap: 4px;
+  }
+
+  .btn-run,
+  .btn-stop {
+    height: 30px;
+    padding: 0 10px;
+    font-size: var(--text-xs);
+  }
+
+  .btn-preview-toggle {
+    height: 30px;
+    padding: 0 9px;
+  }
+}
+
+@media (max-width: 1140px) {
+  #header.app-navbar {
+    padding: 0 8px;
+  }
+
+  .navbar-left,
+  .navbar-center,
+  .navbar-right {
+    gap: 6px;
+  }
+
+  .navbar-brand {
+    padding-right: 0;
+  }
+
+  .navbar-brand .brand-logo {
+    height: 26px;
+  }
+
+  .btn-preview-toggle .btn-text,
+  .btn-run .btn-text,
+  .btn-stop .btn-text {
+    display: none !important;
+  }
+
+  .btn-preview-toggle,
+  .btn-run,
+  .btn-stop {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 6px;
+  }
+
+  .btn-group-nav {
+    gap: 3px;
+  }
+
+  .btn-nav {
+    height: 30px;
+    min-width: 28px;
+    padding: 0 4px;
+  }
+
+  .btn-nav .material-icons,
+  .btn-nav .fa {
+    font-size: 16px;
+  }
+
+  .nav-divider {
+    margin: 0 2px;
+    height: 20px;
+  }
+
+  .mode-toggle-switch {
+    width: auto;
+    height: 28px;
+  }
+
+  .mode-toggle-track {
+    height: 28px;
+  }
+
+  .mode-toggle-option {
+    height: 22px;
+    padding: 0 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .nav-select-group {
+    height: 28px;
+  }
+
+  .nav-select-group .nav-select {
+    min-width: 70px;
+    max-width: none;
+    font-size: 11px;
+    padding: 0 6px;
+  }
+
+  .nav-select-group .btn-nav-attached,
+  .nav-select-group .btn-nav-flash {
+    padding: 0 6px;
+  }
+
+  .navbar-right {
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 1020px) {
+  #header.app-navbar {
+    padding: 0 6px;
+  }
+
+  .navbar-left,
+  .navbar-center,
+  .navbar-right {
+    gap: 5px;
+  }
+
+  .navbar-brand .brand-logo {
+    height: 24px;
+  }
+
+  .btn-nav {
+    height: 28px;
+    min-width: 28px;
+    padding: 0 4px;
+  }
+
+  .btn-preview-toggle,
+  .btn-run,
+  .btn-stop {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 5px;
+  }
+
+  .mode-toggle-switch {
+    width: auto;
+    height: 26px;
+  }
+
+  .mode-toggle-track {
+    height: 26px;
+  }
+
+  .mode-toggle-option {
+    height: 20px;
+    padding: 0 7px;
+    font-size: 10.5px;
+    gap: 3px;
+  }
+
+  .nav-select-group {
+    height: 26px;
+  }
+
+  .nav-select-group .nav-select {
+    min-width: 65px;
+    font-size: 10.5px;
+    padding: 0 4px;
+  }
 }

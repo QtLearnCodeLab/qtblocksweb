@@ -1,0 +1,121 @@
+/* Device connection, WebREPL, and WebUSB surfaces. */
+.embedded-panel {
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-lg);
+}
+
+#toggle_flash,
+#toggle_microbit {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 25%;
+  left: 13.7%;
+  width: 60.99%;
+  opacity: 0.9;
+}
+
+.device-action-group {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.device-action-button {
+  min-height: 34px;
+  padding: 6px 12px;
+  border-color: var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.device-action-button + .device-action-button {
+  margin-left: -1px;
+}
+
+.device-action-button:hover {
+  z-index: 1;
+  border-color: var(--color-brand);
+  background: var(--bg-hover);
+}
+
+#editor_microbit {
+  position: fixed;
+  width: 60.5%;
+  height: 55%;
+  background: #000;
+  font-size: 22px;
+}
+
+#repl {
+  position: absolute;
+  width: 100%;
+  height: 80%;
+}
+
+#put-file-list {
+  vertical-align: middle;
+  font-weight: 700;
+}
+
+#webusb-flashing-loader {
+  width: 10px;
+  height: 10px;
+  margin: auto;
+  border: 0.2em solid #eee;
+  border-top-color: #369;
+  border-radius: 50%;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#webusb-flashing-complete {
+  color: #369;
+  font-size: 2em;
+}
+
+#blockly {
+  display: none;
+  min-width: 570px;
+  overflow: auto;
+  resize: horizontal;
+  padding-right: 10px;
+}
+
+#blockly::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border: 0.5em solid transparent;
+  border-right-color: #888;
+  border-bottom-color: #888;
+  content: "";
+  cursor: ew-resize;
+}
+
+.modal-overlay-container {
+  position: absolute;
+  top: 0;
+  z-index: 99;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  margin: auto;
+  background-color: rgb(255 255 255 / 60%);
+  font-family: var(--font-sans);
+  line-height: 25px;
+  text-align: center;
+}
+
+.modal-msg-overlay-container {
+  text-align: center;
+}

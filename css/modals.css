@@ -1,10 +1,16 @@
 /* ==========================================================================
-   QtBlocks Studio - Modern Modal System
-   Replaces legacy Bootstrap 3 modal aesthetics with 2026 design tokens
+   QtBlocks Studio - QtBlocks Dialog System
+   Token-driven dialog presentation with 2026 design tokens
    ========================================================================== */
 
 /* --- Backdrop --- */
-.modal-backdrop {
+.dialog-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1040 !important;
   background-color: rgba(15, 23, 42, 0.6) !important;
   backdrop-filter: blur(6px) !important;
   -webkit-backdrop-filter: blur(6px) !important;
@@ -13,16 +19,40 @@
 }
 
 /* --- Modal Dialog Card --- */
-.modal {
+.dialog-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  z-index: 1050 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  display: none;
   font-family: var(--font-sans) !important;
 }
 
-.modal-dialog {
-  margin: 60px auto !important;
-  max-width: 680px;
+.dialog-overlay.is-open {
+  display: block !important;
 }
 
-.modal-content {
+.dialog-panel {
+  margin: 60px auto !important;
+  max-width: 680px;
+  position: relative;
+  width: auto;
+  pointer-events: auto;
+}
+
+.dialog-panel.dialog-panel-lg {
+  max-width: 780px !important;
+}
+
+.dialog-panel.dialog-panel-sm {
+  max-width: 300px !important;
+}
+
+.dialog-surface {
   border: 1px solid var(--border-subtle) !important;
   border-radius: var(--radius-xl) !important;
   background-color: var(--bg-surface) !important;
@@ -32,7 +62,7 @@
 }
 
 /* --- Modal Header --- */
-.modal-header {
+.dialog-header {
   padding: 18px 24px !important;
   border-bottom: 1px solid var(--border-subtle) !important;
   display: flex !important;
@@ -42,12 +72,12 @@
   position: relative !important;
 }
 
-.modal-header .modal-title,
-.modal-header #configModalLabel,
-.modal-header #aboutModalLabel,
-.modal-header #exampleModalLabel,
-.modal-header #cardLabel,
-.modal-header #usbLabel {
+.dialog-header .dialog-title,
+.dialog-header #configModalLabel,
+.dialog-header #aboutModalLabel,
+.dialog-header #exampleModalLabel,
+.dialog-header #cardLabel,
+.dialog-header #usbLabel {
   font-family: var(--font-sans) !important;
   font-size: 18px !important;
   font-weight: 700 !important;
@@ -60,14 +90,14 @@
 }
 
 /* Fix gear icon rendering */
-.modal-header .fa-cog::before {
+.dialog-header .fa-cog::before {
   color: var(--color-brand) !important;
   font-size: 20px !important;
   margin-right: 6px !important;
   vertical-align: middle !important;
 }
 
-.modal-header .fa-file-text::before {
+.dialog-header .fa-file-text::before {
   color: var(--color-brand) !important;
   font-size: 20px !important;
   margin-right: 6px !important;
@@ -75,7 +105,7 @@
 }
 
 /* Modal Close Button */
-.modal-header .close {
+.dialog-header .dialog-close {
   position: absolute !important;
   right: 20px !important;
   top: 50% !important;
@@ -99,7 +129,7 @@
   text-shadow: none !important;
 }
 
-.modal-header .close:hover {
+.dialog-header .dialog-close:hover {
   background-color: var(--bg-hover) !important;
   color: var(--text-primary) !important;
   border-color: var(--border-default) !important;
@@ -107,7 +137,7 @@
 }
 
 /* --- Modal Body & Form Layout --- */
-.modal-body {
+.dialog-body {
   padding: 20px 24px !important;
   font-family: var(--font-sans) !important;
   color: var(--text-primary) !important;
@@ -283,7 +313,7 @@
 }
 
 /* --- Modal Footer --- */
-.modal-footer {
+.dialog-footer {
   padding: 14px 24px !important;
   border-top: 1px solid var(--border-subtle) !important;
   background-color: var(--bg-muted) !important;
@@ -294,7 +324,7 @@
 }
 
 #btn_valid_config,
-.modal-footer .btn-primary {
+.dialog-footer .dialog-primary-button {
   height: 36px !important;
   padding: 0 20px !important;
   background-color: var(--color-brand) !important;
@@ -311,13 +341,399 @@
 }
 
 #btn_valid_config:hover,
-.modal-footer .btn-primary:hover {
+.dialog-footer .dialog-primary-button:hover {
   background-color: var(--color-brand-dark) !important;
   box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4) !important;
   transform: translateY(-0.5px) !important;
 }
 
 #btn_valid_config:active,
-.modal-footer .btn-primary:active {
+.dialog-footer .dialog-primary-button:active {
   transform: translateY(1px) !important;
+}
+
+/* --- About Modal Styles --- */
+.about-modal-body {
+  padding: 24px !important;
+}
+
+.about-card-layout {
+  display: flex !important;
+  gap: var(--space-4) !important;
+  align-items: flex-start !important;
+}
+
+.about-logo-container {
+  flex-shrink: 0;
+  width: 130px;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: var(--space-2) !important;
+  padding: var(--space-3) !important;
+  background-color: var(--bg-muted) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+
+.about-logo-img {
+  width: 100px !important;
+  height: auto !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+.about-version-badge,
+#versionapp {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--color-brand) !important;
+  background-color: var(--color-brand-light) !important;
+  padding: 2px 8px !important;
+  border-radius: var(--radius-full) !important;
+  letter-spacing: 0.5px !important;
+  font-family: var(--font-sans) !important;
+}
+
+.about-content-container {
+  flex: 1;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.about-app-title {
+  margin: 0 !important;
+  font-family: var(--font-sans) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  letter-spacing: -0.3px !important;
+}
+
+.about-description-text,
+#aboutBody {
+  font-family: var(--font-sans) !important;
+  font-size: 13.5px !important;
+  line-height: 1.65 !important;
+  color: var(--text-secondary) !important;
+  margin: 0 !important;
+}
+
+.about-links-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: var(--space-2) !important;
+  flex-wrap: wrap !important;
+}
+
+.about-link-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  height: 34px !important;
+  padding: 0 14px !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  cursor: pointer !important;
+  box-shadow: var(--shadow-xs) !important;
+  transition: all var(--transition-fast) !important;
+  outline: none !important;
+  text-decoration: none !important;
+}
+
+.about-link-btn:hover {
+  background-color: var(--bg-hover) !important;
+  border-color: var(--color-brand) !important;
+  color: var(--color-brand) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.15) !important;
+}
+
+.about-link-btn:active {
+  transform: translateY(0) !important;
+}
+
+.about-link-btn .fa {
+  font-size: 13px !important;
+  color: var(--color-brand) !important;
+}
+
+.about-modal-footer {
+  justify-content: center !important;
+  padding: 12px 24px !important;
+  background-color: var(--bg-muted) !important;
+}
+
+.about-copyright-text {
+  font-size: var(--text-xs) !important;
+  color: var(--text-muted) !important;
+  font-family: var(--font-sans) !important;
+}
+
+/* --- Examples Modal Styles --- */
+#exampleModal .dialog-body {
+  padding: 16px 24px 24px !important;
+  background-color: var(--bg-muted) !important;
+  max-height: 480px !important;
+  overflow-y: auto !important;
+}
+
+#exampleModal .examples-table-scroll {
+  border: none !important;
+  margin: 0 !important;
+}
+
+#exampleModal .examples-table {
+  margin-bottom: 0 !important;
+  border-collapse: separate !important;
+  border-spacing: 0 10px !important;
+  background: transparent !important;
+}
+
+.example-item-row {
+  background-color: var(--bg-surface) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-xs) !important;
+  border: 1px solid var(--border-subtle) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.example-item-row:hover {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--color-brand) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.example-item-row td {
+  padding: 14px 18px !important;
+  vertical-align: middle !important;
+  border-top: none !important;
+}
+
+.example-project-link {
+  font-family: var(--font-sans) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-decoration: none !important;
+  transition: color var(--transition-fast) !important;
+}
+
+.example-project-link:hover {
+  color: var(--color-brand) !important;
+  text-decoration: none !important;
+}
+
+.example-icon-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: var(--radius-md) !important;
+  background-color: var(--color-brand-light) !important;
+  color: var(--color-brand) !important;
+  font-size: 16px !important;
+  flex-shrink: 0 !important;
+}
+
+.example-action-col {
+  text-align: right !important;
+}
+
+.example-action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 7px 14px !important;
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--text-xs) !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: all var(--transition-fast) !important;
+  border: 1px solid #fecaca !important;
+}
+
+.example-action-btn:hover {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  transform: translateY(-1px) !important;
+}
+
+.example-action-btn .fa {
+  font-size: 14px !important;
+}
+
+/* QtPi Veda Setup Modal Buttons & Rows */
+.btn-veda-pair {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 16px !important;
+  font-family: var(--font-sans) !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-md) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all var(--transition-fast) !important;
+  white-space: nowrap !important;
+  line-height: 1.4 !important;
+}
+
+.btn-veda-primary {
+  background-color: var(--color-brand) !important;
+  border: 1px solid var(--color-brand-dark) !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(2, 132, 199, 0.25) !important;
+}
+
+.btn-veda-primary:hover {
+  background-color: var(--color-brand-dark) !important;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-veda-secondary {
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-default) !important;
+  color: var(--text-primary) !important;
+  box-shadow: var(--shadow-xs) !important;
+}
+
+.btn-veda-secondary:hover {
+  background-color: var(--bg-hover) !important;
+  border-color: var(--color-brand) !important;
+  color: var(--color-brand) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-veda-unpair {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 6px 12px !important;
+  font-family: var(--font-sans) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-md) !important;
+  background-color: #fee2e2 !important;
+  border: 1px solid #fca5a5 !important;
+  color: #b91c1c !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.btn-veda-unpair:hover {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 5px rgba(220, 38, 38, 0.3) !important;
+}
+
+.veda-option-row.is-active {
+  border-color: var(--color-brand) !important;
+  box-shadow: 0 0 0 1px var(--color-brand) !important;
+}
+
+/* MicroPython File Explorer within Setup Modal */
+.veda-mpy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: left;
+}
+
+.veda-mpy-table th {
+  padding: 8px 12px;
+  background: var(--bg-muted);
+  color: var(--text-secondary);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.veda-mpy-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+.veda-mpy-table tr:last-child td {
+  border-bottom: none;
+}
+
+.veda-mpy-table tr:hover td {
+  background-color: var(--bg-hover);
+}
+
+.btn-mpy-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-mpy-action:hover {
+  background: var(--bg-hover);
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.btn-mpy-delete {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.btn-mpy-delete:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.btn-mpy-save-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-mpy-save-main:hover {
+  background: #10b981;
+  border-color: #059669;
+  color: #ffffff;
 }

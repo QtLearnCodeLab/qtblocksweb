@@ -334,3 +334,25 @@ Blockly.Msg.TEXT_APPEND_VARIABLE = Blockly.Msg.VARIABLES_DEFAULT_NAME;
 Blockly.Msg.TEXT_CREATE_JOIN_ITEM_TITLE_ITEM = Blockly.Msg.VARIABLES_DEFAULT_NAME;
 Blockly.Msg.LISTS_INDEX_OF_INPUT_IN_LIST = Blockly.Msg.LISTS_INLIST;
 Blockly.Msg.PROCEDURES_DEFRETURN_COMMENT = Blockly.Msg.PROCEDURES_DEFNORETURN_COMMENT;
+Blockly.Msg.TEXT_PROMPT_HELPURL = "https://github.com/google/blockly/wiki/Text#getting-input-from-the-user";
+Blockly.Msg.TEXT_PROMPT_TOOLTIP_NUMBER = "Prompt for user for a number.";
+Blockly.Msg.TEXT_PROMPT_TOOLTIP_TEXT = "Prompt for user for some text.";
+Blockly.Msg.TEXT_PROMPT_TYPE_NUMBER = "prompt for number with message";
+Blockly.Msg.TEXT_PROMPT_TYPE_TEXT = "prompt for text with message";
+
+
+// Dictionary Messages
+Blockly.Msg.DICTS_CREATE_EMPTY_TITLE = "create empty dictionary";
+Blockly.Msg.DICTS_CREATE_WITH_INPUT_WITH = "create dictionary with";
+Blockly.Msg.DICTS_CREATE_WITH_CONTAINER_TITLE_ADD = "dictionary";
+Blockly.Msg.DICTS_CREATE_WITH_ITEM_TITLE = "item";
+Blockly.Msg.DICTS_CREATE_WITH_TOOLTIP = "Create a dictionary with any number of items.";
+Blockly.Msg.DICTS_ADD_OR_CHANGE = "add or change key";
+Blockly.Msg.DICTS_ADD_VALUE = "value";
+Blockly.Msg.DICTS_ADD_TOOLTIP = "Add or change a key-value pair in dictionary.";
+Blockly.Msg.DICTS_DELETE_TOOLTIP = "Delete a key from dictionary.";
+Blockly.Msg.DICTS_SET_DEFAULT = "set default value";
+Blockly.Msg.DICTS_DEFAULT_VALUE = "default value";
+Blockly.Msg.DICTS_SETDEFAULT_TOOLTIP = "Set default value for key if not present.";
+Blockly.Msg.LISTS_GET_SUBLIST_HELPURL = "";
+
