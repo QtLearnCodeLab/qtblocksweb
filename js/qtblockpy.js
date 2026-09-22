@@ -70,6 +70,7 @@ QtBlockPy.init = function () {
 	QtBlockPy.workspace.render();
 	QtBlockPy.loadFile();
 	window.addEventListener('unload', QtBlockPy.backupBlocks, false);
+	window.addEventListener('unload', QtBlockPy.releaseAllSerialPorts, false);
 	QtBlockPy.webrepl_init();
 
 	var value = "None";
@@ -199,18 +200,285 @@ QtBlockPy.matchVedaBoard = function (portInfo, port) {
 
 
 QtBlockPy._activeReader = null;
+QtBlockPy._activeWriter = null;
+QtBlockPy._activeReadPromise = null;
 QtBlockPy._mpyProbedPort = null;
+QtBlockPy._isAborted = false;
+QtBlockPy._probeRetryTimer = null;
+QtBlockPy._boardExecutionActive = false;
 
-QtBlockPy.stopSerialStream = async function () {
+QtBlockPy.setBoardExecutionActive = function (active) {
+	QtBlockPy._boardExecutionActive = Boolean(active);
+	var codeMode = window.localStorage.content === 'off';
+	if (active) {
+		$('#btn_run').addClass('hidden');
+		$('#btn_run_custom').addClass('hidden');
+		$(codeMode ? '#btn_stop_custom' : '#btn_stop').removeClass('hidden');
+	} else if (typeof QtBlockPy.cleanupExecution === 'function') {
+		QtBlockPy.cleanupExecution();
+	}
+};
+
+QtBlockPy.stopSerialStream = async function (options) {
+	options = options || {};
+	QtBlockPy._isAborted = true;
+	if (QtBlockPy._probeRetryTimer) {
+		clearTimeout(QtBlockPy._probeRetryTimer);
+		QtBlockPy._probeRetryTimer = null;
+	}
+	if (options.interruptBoard && QtBlockPy.selectedVedaPort) {
+		var interruptWriter = QtBlockPy._activeWriter;
+		var ownsInterruptWriter = false;
+		try {
+			if (!QtBlockPy.selectedVedaPort.readable || !QtBlockPy.selectedVedaPort.writable) {
+				await QtBlockPy.selectedVedaPort.open({ baudRate: 115200 });
+			}
+			if (!interruptWriter && QtBlockPy.selectedVedaPort.writable) {
+				interruptWriter = QtBlockPy.selectedVedaPort.writable.getWriter();
+				ownsInterruptWriter = true;
+			}
+			if (interruptWriter) {
+				// Stop the running script, then leave raw REPL for the normal friendly REPL.
+				await interruptWriter.write(new TextEncoder().encode('\x03\x03\x02'));
+			}
+		} catch (e) {
+			// The port may already be disconnected; teardown below must still continue.
+		} finally {
+			if (ownsInterruptWriter && interruptWriter) {
+				try { interruptWriter.releaseLock(); } catch (e) {}
+			}
+		}
+	}
 	if (QtBlockPy._activeReader) {
 		try {
-			await QtBlockPy._activeReader.cancel();
+			if (QtBlockPy._activeReader.cancel) await QtBlockPy._activeReader.cancel();
 		} catch (e) {}
+		if (QtBlockPy._activeReadPromise) {
+			try { await QtBlockPy._activeReadPromise; } catch (e) {}
+			QtBlockPy._activeReadPromise = null;
+		}
 		try {
 			QtBlockPy._activeReader.releaseLock();
 		} catch (e) {}
 		QtBlockPy._activeReader = null;
 	}
+	if (QtBlockPy._activeWriter) {
+		try {
+			QtBlockPy._activeWriter.releaseLock();
+		} catch (e) {}
+		QtBlockPy._activeWriter = null;
+	}
+	if (QtBlockPy.selectedVedaPort && typeof QtBlockPy.selectedVedaPort.close === 'function') {
+		try {
+			await QtBlockPy.selectedVedaPort.close();
+		} catch (e) {}
+	}
+};
+
+/**
+ * releaseAllSerialPorts — safe teardown of every held WebSerial resource.
+ * Called on pagehide, visibilitychange (hidden), and unload so the OS serial
+ * port is freed for other applications (e.g. Hardware Flasher, Arduino IDE)
+ * as soon as QtBlocks is no longer the active page.
+ */
+QtBlockPy.releaseAllSerialPorts = async function () {
+	QtBlockPy._isAborted = true;
+	await QtBlockPy.stopSerialStream({ interruptBoard: true });
+	if (QtBlockPy._mpyProbedPort && typeof QtBlockPy._mpyProbedPort.close === 'function') {
+		try { await QtBlockPy._mpyProbedPort.close(); } catch (_) {}
+		QtBlockPy._mpyProbedPort = null;
+	}
+	QtBlockPy.selectedVedaPort = null;
+	if (navigator.serial && typeof navigator.serial.getPorts === 'function') {
+		try {
+			var ports = await navigator.serial.getPorts();
+			for (var i = 0; i < ports.length; i++) {
+				var p = ports[i];
+				if (p) {
+					try { await p.close(); } catch (_) {}
+				}
+			}
+		} catch (_) {}
+	}
+};
+
+// ── Serial Port Lifecycle Hooks ─────────────────────────────────────────────
+// pagehide: most reliable in Electron — fires when the BrowserView/WebContents
+// is navigated away, the window is closed, or the app quits.
+window.addEventListener('pagehide', function () {
+	QtBlockPy.releaseAllSerialPorts();
+});
+
+// visibilitychange: fires when the user switches to another app or tab.
+// Releasing here lets the Hardware Flasher (or any other tool) claim the port
+// the moment QtBlocks loses focus, without the user having to manually disconnect.
+document.addEventListener('visibilitychange', function () {
+	if (document.visibilityState === 'hidden') {
+		QtBlockPy.releaseAllSerialPorts();
+	}
+});
+
+// message: allows parent Electron window to instruct QtBlocks to immediately release ports
+window.addEventListener('message', function (e) {
+	if (e && e.data === 'release-serial-ports') {
+		QtBlockPy.releaseAllSerialPorts();
+	}
+});
+
+
+/**
+ * classifySerialOutput — identify what's running on the board from raw captured bytes.
+ *
+ * Returns an object: { type, label, color, icon, details }
+ *   type: 'micropython' | 'arduino' | 'crash' | 'booting' | 'unknown'
+ */
+QtBlockPy.classifySerialOutput = function (rawText) {
+	var t = rawText || '';
+	var tl = t.toLowerCase();
+
+	// ROM could not find a valid application segment in the selected partition.
+	// This is a boot-image/flash-layout failure, not an unknown custom sketch.
+	if (tl.includes('load:0xffffffff') && tl.includes('len:-1')) {
+		return {
+			type: 'boot-failure',
+			label: '⚠️ ESP32 Boot Image Read Failure',
+			color: '#b45309',
+			bg: '#fef3c7',
+			icon: 'fa-exclamation-triangle',
+			details: 'The ESP32 bootloader could not read a valid application image from the selected flash partition.',
+			advice: 'Run Complete Reinstall once to restore the board, then use the updated Active Parts installer.'
+		};
+	}
+
+	// ── Crash / Guru Meditation (highest priority) ────────────────────────────
+	if (tl.includes('guru meditation') || tl.includes('core  0 panic') ||
+	    tl.includes('core  1 panic') || tl.includes('illegalinstruction') ||
+	    tl.includes('loadstorerror') || tl.includes('integerdividebyzero') ||
+	    tl.includes('unhandledexception') || tl.includes('backtrace:') ||
+	    tl.includes('a fatal error occurred') || tl.includes('abort() was called')) {
+		var crashLine = '';
+		t.split('\n').forEach(function (line) {
+			if (/guru meditation|panic'ed|exception was|backtrace/i.test(line)) {
+				crashLine = line.trim();
+			}
+		});
+		return {
+			type: 'crash',
+			label: '💥 ESP32 Crash Detected',
+			color: '#dc2626',
+			bg: '#fee2e2',
+			icon: 'fa-exclamation-triangle',
+			details: crashLine || 'Guru Meditation Error — see serial log below for full trace.',
+			advice: 'The board crashed after last upload. Common causes: stack overflow, illegal instruction at wrong flash offset, or wrong firmware for this board.'
+		};
+	}
+
+	// ── MicroPython REPL ──────────────────────────────────────────────────────
+	if (tl.includes('micropython') || t.includes('raw REPL') ||
+	    t.includes('>>>') || tl.includes('mpy version') ||
+	    tl.includes('uqtpy') || tl.includes('keyboardinterrupt') ||
+	    tl.includes('traceback') || tl.includes('main.py')) {
+		var mpyVer = '';
+		var verMatch = t.match(/MicroPython\s+([\w.\-]+)/i);
+		if (verMatch) mpyVer = ' ' + verMatch[1];
+		return {
+			type: 'micropython',
+			label: '🐍 MicroPython REPL' + mpyVer,
+			color: '#065f46',
+			bg: '#d1fae5',
+			icon: 'fa-terminal',
+			details: 'Board is running MicroPython. REPL is active and Python programs can be uploaded.',
+			advice: null
+		};
+	}
+
+	// ── Arduino / Firmata ─────────────────────────────────────────────────────
+	if (tl.includes('firmata') || tl.includes('standardfirmata') || tl.includes('code2play')) {
+		return {
+			type: 'arduino',
+			label: '🤖 Arduino / Firmata Sketch',
+			color: '#0369a1',
+			bg: '#e0f2fe',
+			icon: 'fa-microchip',
+			details: 'Board is running Arduino / Firmata firmware (Code2Play mode). Serial protocol is binary Firmata.',
+			advice: null
+		};
+	}
+
+	// ── Binary Firmata heuristic (binary bytes but no readable text) ──────────
+	// Firmata version report is 0xF9 maj min (3 bytes); SysEx is 0xF0 ... 0xF7
+	var byteValues = [];
+	for (var i = 0; i < Math.min(t.length, 64); i++) {
+		byteValues.push(t.charCodeAt(i));
+	}
+	var firmataBytes = byteValues.filter(function (b) { return b >= 0xF0 && b <= 0xFF; });
+	if (firmataBytes.length >= 2) {
+		return {
+			type: 'arduino',
+			label: '🤖 Arduino / Firmata (binary protocol)',
+			color: '#0369a1',
+			bg: '#e0f2fe',
+			icon: 'fa-microchip',
+			details: 'Board responded with Firmata binary protocol. Direct serial communication is active.',
+			advice: null
+		};
+	}
+
+	// ── Booting (data received but not recognized) ────────────────────────────
+	if (t.trim().length > 0) {
+		return {
+			type: 'unknown',
+			label: '⚠️ Unrecognized Serial Output',
+			color: '#92400e',
+			bg: '#fef3c7',
+			icon: 'fa-question-circle',
+			details: 'Board is sending data but the firmware type could not be identified.',
+			advice: 'Board may be running a custom sketch. Check the serial log below.'
+		};
+	}
+
+	// ── No response ───────────────────────────────────────────────────────────
+	return {
+		type: 'unknown',
+		label: '⏳ No Response',
+		color: '#6b7280',
+		bg: '#f3f4f6',
+		icon: 'fa-circle-o',
+		details: 'Board did not send any data during the probe window.',
+		advice: 'Try pressing the board RESET button, then click "Re-check REPL".'
+	};
+};
+
+/**
+ * emitSerialLog — write a formatted serial capture block to the terminal drawer.
+ */
+QtBlockPy.emitSerialLog = function (classification, rawCapture) {
+	var esc = function (s) {
+		return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	};
+	var timestamp = new Date().toLocaleTimeString();
+	var lines = [
+		'<div style="border-left:3px solid ' + classification.color + ';margin:6px 0;padding:4px 10px;background:' + classification.bg + ';border-radius:0 4px 4px 0;">',
+		'  <div style="font-weight:700;color:' + classification.color + ';font-size:12px;">' + esc(classification.label) + '</div>',
+		'  <div style="font-size:11px;color:#374151;margin-top:2px;">' + esc(classification.details) + '</div>',
+	];
+	if (classification.advice) {
+		lines.push('  <div style="font-size:11px;color:#6b7280;margin-top:4px;">💡 ' + esc(classification.advice) + '</div>');
+	}
+	lines.push('</div>');
+
+	if (rawCapture && rawCapture.trim().length > 0) {
+		var printable = rawCapture.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, function (c) {
+			return '<span style="opacity:0.4;">\\x' + c.charCodeAt(0).toString(16).padStart(2, '0') + '</span>';
+		});
+		lines.push('<div style="margin:4px 0;">');
+		lines.push('  <div style="font-size:10px;color:#6b7280;margin-bottom:2px;">📡 [' + timestamp + '] Raw serial capture:</div>');
+		lines.push('  <pre style="font-size:11px;background:#1e1e2e;color:#cdd6f4;padding:8px;border-radius:4px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:160px;overflow-y:auto;">' + esc(rawCapture).substring(0, 2000) + (rawCapture.length > 2000 ? '\n… (truncated)' : '') + '</pre>');
+		lines.push('</div>');
+	}
+
+	outf(lines.join('\n'));
+	QtBlockPy.openTerminalDrawer();
 };
 
 QtBlockPy.probeMicroPythonAndFiles = async function () {
@@ -237,73 +505,183 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 	}
 
 	await QtBlockPy.stopSerialStream();
+	QtBlockPy._isAborted = false;
 
-	var wasAlreadyOpen = Boolean(port.readable && port.writable);
 	var reader = null;
 	var writer = null;
+	var isReading = true;
+	var currentReadLoop = null;
 
 	try {
-		if (!wasAlreadyOpen) {
+		if (QtBlockPy._isAborted) return;
+		// Attempt to open port; if temporarily held during an app switch, retry briefly
+		try {
 			await port.open({ baudRate: 115200 });
+		} catch (openErr) {
+			if (openErr && openErr.message && (openErr.message.includes('open') || openErr.message.includes('use') || openErr.message.includes('Failed'))) {
+				await new Promise(function (r) { setTimeout(r, 400); });
+				if (QtBlockPy._isAborted) return;
+				await port.open({ baudRate: 115200 });
+			} else {
+				throw openErr;
+			}
 		}
 
 		writer = port.writable.getWriter();
+		QtBlockPy._activeWriter = writer;
 		reader = port.readable.getReader();
+		QtBlockPy._activeReader = reader;
 		var textEncoder = new TextEncoder();
 		var textDecoder = new TextDecoder();
+		var allCapture = ''; // accumulates ALL bytes received during the entire probe
 
 		function readUntil(delimiter, timeoutMs) {
-			return new Promise(function (resolve) {
+			var readPromise = new Promise(function (resolve) {
 				var buffer = '';
+				var settled = false;
+				function finish(value) {
+					if (settled) return;
+					settled = true;
+					if (value) allCapture += value;
+					resolve(value || '');
+				}
 				var timer = setTimeout(function () {
-					resolve(buffer);
+					// Save everything, even when the board is silent until timeout.
+					finish(buffer);
 				}, timeoutMs);
 
-				(async function loop() {
+				currentReadLoop = (async function loop() {
 					try {
-						while (true) {
+						while (isReading && !QtBlockPy._isAborted) {
 							var { value, done } = await reader.read();
-							if (done) break;
+							if (done || !isReading || QtBlockPy._isAborted) break;
 							if (value) {
 								buffer += textDecoder.decode(value);
 								if (buffer.includes(delimiter)) {
 									clearTimeout(timer);
-									resolve(buffer);
+									finish(buffer);
 									return;
 								}
 							}
 						}
 					} catch (e) {
 						clearTimeout(timer);
-						resolve(buffer);
+						finish(buffer);
 					}
 				})();
+				QtBlockPy._activeReadPromise = currentReadLoop;
 			});
+			readPromise.then(function () {
+				if (QtBlockPy._activeReadPromise === currentReadLoop) QtBlockPy._activeReadPromise = null;
+			});
+			return readPromise;
 		}
 
-		// 1. Send Ctrl-C Ctrl-C Ctrl-A to enter Raw REPL
+		// 1. Enter raw REPL — try once, then retry after a 2-second delay.
+		// MicroPython needs ~2-4 s after a fresh flash to mount LittleFS
+		// and bring the REPL up. A single 1.4-second timeout misses that
+		// window and incorrectly shows "Arduino mode".
 		await writer.write(textEncoder.encode('\r\x03\x03\x01'));
-		var rawReplBanner = await readUntil('raw REPL', 1400);
+		var rawReplBanner = await readUntil('raw REPL', 3500);
 
-		if (!rawReplBanner.includes('raw REPL')) {
-			// Did not respond with raw REPL -> Not MicroPython
-			await writer.write(textEncoder.encode('\x02')); // Ctrl-B exit
+		if (!rawReplBanner.includes('raw REPL') && !QtBlockPy._isAborted) {
+			// First attempt missed — board may still be booting after a flash.
+			// Show a friendly "waiting" hint and retry once after 2 s.
 			if (mpyBadge) {
-				mpyBadge.style.background = '#e0f2fe';
-				mpyBadge.style.color = '#0369a1';
-				mpyBadge.textContent = 'Arduino / Serial Mode';
+				mpyBadge.style.background = '#fef3c7';
+				mpyBadge.style.color = '#92400e';
+				mpyBadge.textContent = 'Waiting for board...';
 			}
 			if (mpyContent) {
-				mpyContent.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:4px 0;">' +
-					'<div style="display:flex;align-items:center;gap:8px;font-weight:600;color:#0369a1;margin-bottom:4px;">' +
-					'<span class="fa fa-microchip"></span> Arduino / Serial Runtime Active' +
-					'</div>' +
-					'Your board is connected in <strong>Arduino / Serial Mode</strong> (supports Firmata & direct serial communication for Code2Play / Arduino apps).' +
-					'<div style="margin-top:8px;font-size:11.5px;color:var(--text-tertiary);">' +
-					'💡 <em>On-board flash file storage is specific to MicroPython boards. If you wish to use Python blocks with on-board files, flash MicroPython firmware via <strong>Hardware Flasher</strong>.</em>' +
-					'</div>' +
-					'</div>';
+				mpyContent.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);padding:6px 0;">' +
+					'<span class="fa fa-spinner fa-spin"></span> Board is finishing boot — retrying in 2 seconds…</div>';
 			}
+			// Release locks safely before the delay so the port isn't held open.
+			isReading = false;
+			try {
+				if (writer) {
+					writer.releaseLock();
+					writer = null;
+					QtBlockPy._activeWriter = null;
+				}
+			} catch (_) {}
+			try {
+				if (reader) {
+					if (reader.cancel) await reader.cancel();
+					try { reader.releaseLock(); } catch (_) {}
+					reader = null;
+					QtBlockPy._activeReader = null;
+				}
+			} catch (_) {}
+			try { await port.close(); } catch (_) {}
+
+			// Wait 2 seconds for MicroPython to finish mounting.
+			await new Promise(function (r) {
+				QtBlockPy._probeRetryTimer = setTimeout(r, 2000);
+			});
+			if (QtBlockPy._isAborted) return;
+
+			// Re-open port and retry.
+			await port.open({ baudRate: 115200 });
+			writer = port.writable.getWriter();
+			QtBlockPy._activeWriter = writer;
+			reader = port.readable.getReader();
+			QtBlockPy._activeReader = reader;
+			isReading = true;
+			await writer.write(textEncoder.encode('\r\x03\x03\x01'));
+			rawReplBanner = await readUntil('raw REPL', 4500);
+		}
+
+		if (!rawReplBanner.includes('raw REPL')) {
+			// Both attempts failed — classify what we actually received.
+			try { if (writer) writer.write(textEncoder.encode('\x02')); } catch (_) {}
+			var classification = QtBlockPy.classifySerialOutput(allCapture);
+
+			if (mpyBadge) {
+				mpyBadge.style.background = classification.bg;
+				mpyBadge.style.color = classification.color;
+				mpyBadge.textContent = classification.label;
+			}
+
+			var reCheckBtn = '<br><button type="button" class="btn-mpy-action" style="margin-top:8px;" onclick="QtBlockPy.probeMicroPythonAndFiles()"><span class="fa fa-refresh"></span> Re-check REPL</button>';
+
+			if (classification.type === 'crash') {
+				if (mpyContent) {
+					mpyContent.innerHTML = '<div style="font-size:12px;color:#991b1b;line-height:1.5;padding:4px 0;">' +
+						'<div style="display:flex;align-items:center;gap:8px;font-weight:600;color:#dc2626;margin-bottom:4px;">' +
+						'<span class="fa fa-exclamation-triangle"></span> ESP32 Crash / Guru Meditation Detected' +
+						'</div>' +
+						'<div style="font-size:11.5px;margin-top:4px;">' + (classification.details || '') + '</div>' +
+						'<div style="margin-top:8px;font-size:11px;color:#6b7280;">💡 ' + (classification.advice || '') + '</div>' +
+						reCheckBtn +
+						'</div>';
+				}
+			} else if (classification.type === 'arduino') {
+				if (mpyContent) {
+					mpyContent.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:4px 0;">' +
+						'<div style="display:flex;align-items:center;gap:8px;font-weight:600;color:#0369a1;margin-bottom:4px;">' +
+						'<span class="fa fa-microchip"></span> Arduino / Serial Runtime Active' +
+						'</div>' +
+						'Your board is connected in <strong>Arduino / Serial Mode</strong> (supports Firmata &amp; direct serial communication for Code2Play / Arduino apps).' +
+						'<div style="margin-top:8px;font-size:11.5px;color:var(--text-tertiary);">' +
+						'💡 <em>To switch to Python mode, flash MicroPython firmware via <strong>Hardware Flasher</strong>.</em>' +
+						reCheckBtn +
+						'</div>' +
+						'</div>';
+				}
+			} else {
+				if (mpyContent) {
+					mpyContent.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);line-height:1.5;padding:4px 0;">' +
+						'<div style="font-weight:600;margin-bottom:4px;">' + (classification.label || 'No REPL Response') + '</div>' +
+						'<div style="font-size:11.5px;">' + (classification.details || '') + '</div>' +
+						'<div style="margin-top:6px;font-size:11px;color:#6b7280;">' + (classification.advice || '') + '</div>' +
+						reCheckBtn +
+						'</div>';
+				}
+			}
+
+			// Always emit serial capture to terminal so the user can see raw output.
+			QtBlockPy.emitSerialLog(classification, allCapture);
 			return;
 		}
 
@@ -326,7 +704,7 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 			'print("__JSON_START__" + json.dumps(_g()) + "__JSON_END__")\r\n';
 
 		await writer.write(textEncoder.encode(probeScript + '\x04'));
-		var probeResponse = await readUntil('__JSON_END__', 2200);
+		var probeResponse = await readUntil('__JSON_END__', 4500);
 
 		// Exit raw REPL
 		await writer.write(textEncoder.encode('\x02'));
@@ -344,6 +722,12 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 				mpyBadge.textContent = 'MicroPython v' + info.ver + ' (' + info.plat + ')';
 			}
 
+			// Emit a confirmation log to terminal
+			QtBlockPy.emitSerialLog(
+				{ type: 'micropython', label: '🐍 MicroPython v' + info.ver + ' (' + info.plat + ')', color: '#065f46', bg: '#d1fae5', details: 'REPL handshake succeeded. Board ready for Python upload.', advice: null },
+				allCapture.substring(0, 400) // only show the REPL banner, not the whole file listing
+			);
+
 			QtBlockPy.renderMicroPythonFiles(info.files);
 		} else {
 			if (mpyBadge) {
@@ -354,6 +738,10 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 			if (mpyContent) {
 				mpyContent.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);">MicroPython REPL is ready. No files returned or listing timed out.</div>';
 			}
+			QtBlockPy.emitSerialLog(
+				{ type: 'micropython', label: '🐍 MicroPython Active', color: '#065f46', bg: '#d1fae5', details: 'REPL handshake succeeded, but file listing timed out.', advice: null },
+				allCapture.substring(0, 400)
+			);
 		}
 	} catch (err) {
 		console.warn('MicroPython probe error:', err);
@@ -366,11 +754,24 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 			mpyContent.innerHTML = '<div style="font-size:12px;color:#991b1b;">Could not communicate with REPL: ' + (err.message || err) + '</div>';
 		}
 	} finally {
+		isReading = false;
 		if (writer) {
 			try { writer.releaseLock(); } catch (e) {}
+			writer = null;
+			QtBlockPy._activeWriter = null;
 		}
 		if (reader) {
-			try { if (reader.cancel) reader.cancel().catch(function(){}); reader.releaseLock(); } catch (e) {}
+			try {
+				if (reader.cancel) await reader.cancel();
+			} catch (_) {}
+			try {
+				reader.releaseLock();
+			} catch (e) {}
+			reader = null;
+			QtBlockPy._activeReader = null;
+		}
+		if (port && typeof port.close === 'function') {
+			try { await port.close(); } catch (e) {}
 		}
 		if (refreshIcon) refreshIcon.classList.remove('fa-spin');
 	}
@@ -449,10 +850,17 @@ QtBlockPy.saveCurrentCodeAsMainPy = async function () {
 
 	var writer = null;
 	var reader = null;
+	var isReading = true;
+	var currentReadLoop = null;
 	try {
 		QtBlockPy.showFeedbackToast('Writing main.py to board flash...');
+		if (!port.readable || !port.writable) {
+			await port.open({ baudRate: 115200 });
+		}
 		writer = port.writable.getWriter();
+		QtBlockPy._activeWriter = writer;
 		reader = port.readable.getReader();
+		QtBlockPy._activeReader = reader;
 		var textEncoder = new TextEncoder();
 		var textDecoder = new TextDecoder();
 
@@ -460,11 +868,11 @@ QtBlockPy.saveCurrentCodeAsMainPy = async function () {
 			return new Promise(function (resolve) {
 				var buffer = '';
 				var timer = setTimeout(function () { resolve(buffer); }, timeoutMs);
-				(async function loop() {
+				currentReadLoop = (async function loop() {
 					try {
-						while (true) {
+						while (isReading) {
 							var { value, done } = await reader.read();
-							if (done) break;
+							if (done || !isReading) break;
 							if (value) {
 								buffer += textDecoder.decode(value);
 								if (buffer.includes(delimiter)) {
@@ -498,11 +906,6 @@ QtBlockPy.saveCurrentCodeAsMainPy = async function () {
 		var resp = await readUntil('__SAVE_OK__', 4000);
 		await writer.write(textEncoder.encode('\x02'));
 
-		writer.releaseLock();
-		reader.releaseLock();
-		writer = null;
-		reader = null;
-
 		if (resp.includes('__SAVE_OK__')) {
 			QtBlockPy.showFeedbackToast('Saved main.py! Will run automatically on board boot.');
 			await QtBlockPy.probeMicroPythonAndFiles();
@@ -513,11 +916,23 @@ QtBlockPy.saveCurrentCodeAsMainPy = async function () {
 		console.error('Error saving main.py:', err);
 		alert('Failed to write main.py to board: ' + (err.message || err));
 	} finally {
+		isReading = false;
 		if (writer) {
 			try { writer.releaseLock(); } catch (e) {}
+			writer = null;
+			QtBlockPy._activeWriter = null;
 		}
 		if (reader) {
-			try { reader.releaseLock(); } catch (e) {}
+			try {
+				if (reader.cancel) await reader.cancel();
+				if (currentReadLoop) await currentReadLoop;
+				reader.releaseLock();
+			} catch (e) {}
+			reader = null;
+			QtBlockPy._activeReader = null;
+		}
+		if (port && typeof port.close === 'function') {
+			try { await port.close(); } catch (e) {}
 		}
 	}
 };
@@ -534,10 +949,17 @@ QtBlockPy.deleteVedaFile = async function (filename) {
 
 	var writer = null;
 	var reader = null;
+	var isReading = true;
+	var currentReadLoop = null;
 	try {
 		QtBlockPy.showFeedbackToast('Deleting ' + filename + '...');
+		if (!port.readable || !port.writable) {
+			await port.open({ baudRate: 115200 });
+		}
 		writer = port.writable.getWriter();
+		QtBlockPy._activeWriter = writer;
 		reader = port.readable.getReader();
+		QtBlockPy._activeReader = reader;
 		var textEncoder = new TextEncoder();
 		var textDecoder = new TextDecoder();
 
@@ -545,11 +967,11 @@ QtBlockPy.deleteVedaFile = async function (filename) {
 			return new Promise(function (resolve) {
 				var buffer = '';
 				var timer = setTimeout(function () { resolve(buffer); }, timeoutMs);
-				(async function loop() {
+				currentReadLoop = (async function loop() {
 					try {
-						while (true) {
+						while (isReading) {
 							var { value, done } = await reader.read();
-							if (done) break;
+							if (done || !isReading) break;
 							if (value) {
 								buffer += textDecoder.decode(value);
 								if (buffer.includes(delimiter)) {
@@ -582,11 +1004,6 @@ QtBlockPy.deleteVedaFile = async function (filename) {
 		var resp = await readUntil('__DEL_OK__', 2500);
 		await writer.write(textEncoder.encode('\x02'));
 
-		writer.releaseLock();
-		reader.releaseLock();
-		writer = null;
-		reader = null;
-
 		if (resp.includes('__DEL_OK__')) {
 			QtBlockPy.showFeedbackToast('Deleted ' + filename);
 			await QtBlockPy.probeMicroPythonAndFiles();
@@ -597,11 +1014,23 @@ QtBlockPy.deleteVedaFile = async function (filename) {
 		console.error('Error deleting file:', err);
 		alert('Failed to delete file: ' + (err.message || err));
 	} finally {
+		isReading = false;
 		if (writer) {
 			try { writer.releaseLock(); } catch (e) {}
+			writer = null;
+			QtBlockPy._activeWriter = null;
 		}
 		if (reader) {
-			try { reader.releaseLock(); } catch (e) {}
+			try {
+				if (reader.cancel) await reader.cancel();
+				if (currentReadLoop) await currentReadLoop;
+				reader.releaseLock();
+			} catch (e) {}
+			reader = null;
+			QtBlockPy._activeReader = null;
+		}
+		if (port && typeof port.close === 'function') {
+			try { await port.close(); } catch (e) {}
 		}
 	}
 };
@@ -614,10 +1043,17 @@ QtBlockPy.loadVedaFile = async function (filename) {
 
 	var writer = null;
 	var reader = null;
+	var isReading = true;
+	var currentReadLoop = null;
 	try {
 		QtBlockPy.showFeedbackToast('Reading ' + filename + ' from board...');
+		if (!port.readable || !port.writable) {
+			await port.open({ baudRate: 115200 });
+		}
 		writer = port.writable.getWriter();
+		QtBlockPy._activeWriter = writer;
 		reader = port.readable.getReader();
+		QtBlockPy._activeReader = reader;
 		var textEncoder = new TextEncoder();
 		var textDecoder = new TextDecoder();
 
@@ -625,11 +1061,11 @@ QtBlockPy.loadVedaFile = async function (filename) {
 			return new Promise(function (resolve) {
 				var buffer = '';
 				var timer = setTimeout(function () { resolve(buffer); }, timeoutMs);
-				(async function loop() {
+				currentReadLoop = (async function loop() {
 					try {
-						while (true) {
+						while (isReading) {
 							var { value, done } = await reader.read();
-							if (done) break;
+							if (done || !isReading) break;
 							if (value) {
 								buffer += textDecoder.decode(value);
 								if (buffer.includes(delimiter)) {
@@ -677,11 +1113,23 @@ QtBlockPy.loadVedaFile = async function (filename) {
 		console.error('Failed to load file:', err);
 		alert('Could not read ' + filename + ': ' + (err.message || err));
 	} finally {
+		isReading = false;
 		if (writer) {
 			try { writer.releaseLock(); } catch (e) {}
+			writer = null;
+			QtBlockPy._activeWriter = null;
 		}
 		if (reader) {
-			try { reader.releaseLock(); } catch (e) {}
+			try {
+				if (reader.cancel) await reader.cancel();
+				if (currentReadLoop) await currentReadLoop;
+				reader.releaseLock();
+			} catch (e) {}
+			reader = null;
+			QtBlockPy._activeReader = null;
+		}
+		if (port && typeof port.close === 'function') {
+			try { await port.close(); } catch (e) {}
 		}
 	}
 };
@@ -973,52 +1421,206 @@ QtBlockPy.uploadToVeda = async function () {
 		return;
 	}
 
+	var writer = null;
+	var reader = null;
 	try {
 		await QtBlockPy.stopSerialStream();
+		QtBlockPy._isAborted = false;
 		var port = QtBlockPy.selectedVedaPort;
 		if (!port.readable || !port.writable) {
 			outf('>> [QtPi Veda] Opening serial connection at 115200 baud...\n');
 			await port.open({ baudRate: 115200 });
 		}
 
-		outf('>> [QtPi Veda] Serial connected. Uploading Python script...\n');
 		var textEncoder = new TextEncoder();
-		var writer = port.writable.getWriter();
+		var textDecoder = new TextDecoder();
+		writer = port.writable.getWriter();
+		QtBlockPy._activeWriter = writer;
+		reader = port.readable.getReader();
+		QtBlockPy._activeReader = reader;
 
-		// MicroPython raw REPL interrupt: Ctrl-C, Ctrl-C, Ctrl-A
-		await writer.write(textEncoder.encode('\r\x03\x03\x01'));
-		await new Promise(function(r) { setTimeout(r, 200); });
+		var unconsumed = '';
+		function readUntil(delimiter, timeoutMs, matcher) {
+			return new Promise(function (resolve) {
+				var buffer = '';
+				var settled = false;
+				var timer = setTimeout(function () {
+					if (settled) return;
+					// A timed-out reader must be cancelled before the caller can
+					// reuse the port; otherwise this loop can consume the next
+					// upload's handshake bytes in the background.
+					try {
+						if (reader && reader.cancel) reader.cancel();
+					} catch (e) {}
+				}, timeoutMs);
+
+				(async function loop() {
+					try {
+						while (!settled) {
+							var result = await reader.read();
+							if (result.done) break;
+							if (result.value) {
+								buffer += textDecoder.decode(result.value, { stream: true });
+								var matchEnd = matcher ? matcher(buffer) : (function () {
+									var idx = buffer.indexOf(delimiter);
+									return idx === -1 ? -1 : idx + delimiter.length;
+								})();
+								if (matchEnd !== -1) {
+									settled = true;
+									clearTimeout(timer);
+									unconsumed = buffer.slice(matchEnd);
+									resolve(buffer.slice(0, matchEnd));
+									return;
+								}
+							}
+						}
+					} catch (e) {
+						// The caller handles a missing delimiter or a cancelled stream.
+					}
+					if (!settled) {
+						settled = true;
+						clearTimeout(timer);
+						resolve(buffer);
+					}
+				})();
+			});
+		}
+
+		function isRawReplBanner(buffer) {
+			if (!buffer.includes('raw REPL')) return -1;
+			var prompt = /(?:\r\n|\n|\r)>/.exec(buffer);
+			return prompt ? prompt.index + prompt[0].length : -1;
+		}
+
+		async function requestRawRepl() {
+			// MicroPython raw REPL interrupt: Ctrl-C, Ctrl-C, Ctrl-A.
+			await writer.write(textEncoder.encode('\r\x03\x03\x01'));
+			// Web Serial adapters and MicroPython builds vary in line endings
+			// (\r\n>, \n>, or \r>). Accept any prompt terminator, but still
+			// require the raw-REPL banner so a normal console cannot pass.
+			return readUntil(null, 2600, isRawReplBanner);
+		}
+
+		var rawReplBanner = await requestRawRepl();
+		if (!rawReplBanner.includes('raw REPL')) {
+			// A probe normally closes the port immediately before upload. Some
+			// ESP32 USB-UART bridges need a short settle period after reopen;
+			// discard the cancelled reader and retry once on a fresh connection.
+			try { if (reader && reader.cancel) await reader.cancel(); } catch (e) {}
+			try { if (reader) reader.releaseLock(); } catch (e) {}
+			reader = null;
+			QtBlockPy._activeReader = null;
+			try { if (writer) writer.releaseLock(); } catch (e) {}
+			writer = null;
+			QtBlockPy._activeWriter = null;
+			try { if (port && port.close) await port.close(); } catch (e) {}
+			await new Promise(function (resolve) { setTimeout(resolve, 300); });
+			await port.open({ baudRate: 115200 });
+			writer = port.writable.getWriter();
+			QtBlockPy._activeWriter = writer;
+			reader = port.readable.getReader();
+			QtBlockPy._activeReader = reader;
+			rawReplBanner = await requestRawRepl();
+		}
+		if (!rawReplBanner.includes('raw REPL')) {
+			throw new Error('The board did not enter the MicroPython console. Confirm that MicroPython firmware is installed, then reconnect the board.');
+		}
 
 		// Send code followed by Ctrl-D to execute
+		outf('>> [QtPi Veda] Serial connected. Uploading Python script...\n');
 		await writer.write(textEncoder.encode(code + '\r\n\x04'));
 		writer.releaseLock();
+		writer = null;
+		QtBlockPy._activeWriter = null;
 
-		outf('>> [QtPi Veda] Program uploaded successfully and running on board!\n');
-		outf('----------------------------------------\n');
+			outf('>> [QtPi Veda] Program sent. Live output appears below:\n');
+			outf('----------------------------------------\n');
+			QtBlockPy.setBoardExecutionActive(true);
 
-		if (port.readable) {
-			var reader = port.readable.getReader();
-			QtBlockPy._activeReader = reader;
-			var textDecoder = new TextDecoder();
-			(async function readLoop() {
-				try {
-					while (true) {
-						var { value, done } = await reader.read();
-						if (done) break;
-						if (value) {
-							outf(textDecoder.decode(value));
+			var readExecutionPromise = (async function readExecutionOutput() {
+			var pending = unconsumed;
+			var acknowledged = false;
+			var responseSection = 0; // 0 = stdout, 1 = stderr, 2 = complete
+			try {
+				while (responseSection < 2) {
+					if (!acknowledged) {
+						var okIndex = pending.indexOf('OK');
+						if (okIndex !== -1) {
+							acknowledged = true;
+							pending = pending.slice(okIndex + 2);
 						}
 					}
-				} catch (e) {
-					// stream ended
-				} finally {
-					reader.releaseLock();
+
+					if (acknowledged && pending.length) {
+						var endIndex = pending.indexOf('\x04');
+						if (endIndex === -1) {
+							if (responseSection === 0) {
+								outf(pending);
+							} else if (pending) {
+								outf('>> [QtPi Veda] Error: ' + pending);
+							}
+							pending = '';
+						} else {
+							var sectionText = pending.slice(0, endIndex);
+							if (responseSection === 0 && sectionText) {
+								outf(sectionText);
+							} else if (responseSection === 1 && sectionText) {
+								outf('>> [QtPi Veda] Error:\n' + sectionText);
+							}
+							pending = pending.slice(endIndex + 1);
+							responseSection += 1;
+							continue;
+						}
+					}
+
+					var result = await reader.read();
+					if (result.done || QtBlockPy._isAborted) break;
+					if (!result.value) continue;
+					pending += textDecoder.decode(result.value, { stream: true });
 				}
-			})();
-		}
+
+				if (responseSection === 2) {
+					outf('>> [QtPi Veda] Program finished.\n');
+				}
+			} catch (e) {
+				if (e && e.name !== 'NetworkError') {
+					outf('>> [QtPi Veda] Output error: ' + (e.message || e) + '\n');
+				}
+			} finally {
+				if (QtBlockPy._activeReader === reader) {
+					QtBlockPy._activeReader = null;
+				}
+				if (QtBlockPy._activeReadPromise === readExecutionPromise) {
+					QtBlockPy._activeReadPromise = null;
+				}
+				try { reader.releaseLock(); } catch (e) {}
+				reader = null;
+					if (port && typeof port.close === 'function') {
+						try { await port.close(); } catch (e) {}
+					}
+					QtBlockPy.setBoardExecutionActive(false);
+				}
+		})();
+		QtBlockPy._activeReadPromise = readExecutionPromise;
 	} catch (err) {
 		outf('>> [QtPi Veda] Upload error: ' + (err.message || err) + '\n');
 		console.error('Veda upload error:', err);
+		if (QtBlockPy._activeReader === reader) {
+			await QtBlockPy.stopSerialStream();
+		}
+		reader = null;
+	} finally {
+		if (writer) {
+			try { writer.releaseLock(); } catch (e) {}
+			writer = null;
+			QtBlockPy._activeWriter = null;
+		}
+		if (reader && QtBlockPy._activeReader !== reader) {
+			try { reader.releaseLock(); } catch (e) {}
+		}
+		if (!QtBlockPy._activeReader && port && typeof port.close === 'function') {
+			try { await port.close(); } catch (e) {}
+		}
 	}
 };
 
@@ -2104,11 +2706,18 @@ function builtinRead (x) {
 QtBlockPy.isExecuting = false;
 QtBlockPy.stopRequested = false;
 
-QtBlockPy.stopExecution = function () {
-	if (QtBlockPy.isExecuting) {
+QtBlockPy.stopExecution = async function () {
+	var hasBoardSession = QtBlockPy._boardExecutionActive || QtBlockPy._activeReader || QtBlockPy._activeWriter || QtBlockPy._activeReadPromise;
+	if (QtBlockPy.isExecuting && !hasBoardSession) {
 		QtBlockPy.stopRequested = true;
 		outf('\n>> Execution stopped by user.\n');
 	}
+	if (QtBlockPy.selectedVedaPort && hasBoardSession) {
+		outf('\n>> Stopping the board program and releasing the connection...\n');
+		await QtBlockPy.stopSerialStream({ interruptBoard: true });
+		outf('>> Board stopped. The serial port is ready for another app.\n');
+	}
+	QtBlockPy._boardExecutionActive = false;
 	QtBlockPy.cleanupExecution();
 };
 
