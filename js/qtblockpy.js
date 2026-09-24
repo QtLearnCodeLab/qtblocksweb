@@ -767,14 +767,21 @@ QtBlockPy.classifySerialOutput = function (rawText) {
 		};
 	}
 
-	// ── Binary Firmata heuristic (binary bytes but no readable text) ──────────
-	// Firmata version report is 0xF9 maj min (3 bytes); SysEx is 0xF0 ... 0xF7
+	// ── Binary Firmata response ───────────────────────────────────────────────
+	// Match an actual protocol frame instead of treating arbitrary high bytes as
+	// Firmata. REPORT_FIRMWARE is F0 79 ... F7; REPORT_VERSION is F9 maj min.
 	var byteValues = [];
-	for (var i = 0; i < Math.min(t.length, 64); i++) {
+	for (var i = 0; i < Math.min(t.length, 512); i++) {
 		byteValues.push(t.charCodeAt(i));
 	}
-	var firmataBytes = byteValues.filter(function (b) { return b >= 0xF0 && b <= 0xFF; });
-	if (firmataBytes.length >= 2) {
+	var hasVersionFrame = byteValues.some(function (b, index) {
+		return b === 0xF9 && index + 2 < byteValues.length;
+	});
+	var firmwareFrameStart = byteValues.findIndex(function (b, index) {
+		return b === 0xF0 && byteValues[index + 1] === 0x79;
+	});
+	var hasFirmwareFrame = firmwareFrameStart >= 0 && byteValues.indexOf(0xF7, firmwareFrameStart + 2) > firmwareFrameStart;
+	if (hasVersionFrame || hasFirmwareFrame) {
 		return {
 			type: 'arduino',
 			label: '🤖 Arduino / Firmata (binary protocol)',
@@ -807,40 +814,45 @@ QtBlockPy.classifySerialOutput = function (rawText) {
 		bg: '#f3f4f6',
 		icon: 'fa-circle-o',
 		details: 'Board did not send any data during the probe window.',
-		advice: 'Try pressing the board RESET button, then click "Re-check REPL".'
+		advice: 'Check the USB cable, press RESET once, then choose Check Board Again.'
 	};
+};
+
+QtBlockPy.openHardwareFlasher = function () {
+	window.location.href = 'qtpi://open-app/qtpi-flasher';
 };
 
 /**
  * emitSerialLog — write a formatted serial capture block to the terminal drawer.
  */
-QtBlockPy.emitSerialLog = function (classification, rawCapture) {
+QtBlockPy.emitSerialLog = function (classification, rawCapture, options) {
+	options = options || {};
 	var esc = function (s) {
 		return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 	};
 	var timestamp = new Date().toLocaleTimeString();
 	var lines = [
-		'<div style="border-left:3px solid ' + classification.color + ';margin:6px 0;padding:4px 10px;background:' + classification.bg + ';border-radius:0 4px 4px 0;">',
-		'  <div style="font-weight:700;color:' + classification.color + ';font-size:12px;">' + esc(classification.label) + '</div>',
-		'  <div style="font-size:11px;color:#374151;margin-top:2px;">' + esc(classification.details) + '</div>',
+		'<div style="border-left:3px solid ' + classification.color + ';margin:6px 0;padding:6px 10px;background:' + classification.bg + ';border-radius:0 4px 4px 0;">',
+		'<div style="font-weight:700;color:' + classification.color + ';font-size:12px;">' + esc(classification.label) + '</div>',
+		'<div style="font-size:11px;color:#374151;margin-top:2px;">' + esc(classification.details) + '</div>'
 	];
 	if (classification.advice) {
-		lines.push('  <div style="font-size:11px;color:#6b7280;margin-top:4px;">💡 ' + esc(classification.advice) + '</div>');
+		lines.push('<div style="font-size:11px;color:#6b7280;margin-top:4px;">💡 ' + esc(classification.advice) + '</div>');
 	}
 	lines.push('</div>');
 
 	if (rawCapture && rawCapture.trim().length > 0) {
-		var printable = rawCapture.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, function (c) {
-			return '<span style="opacity:0.4;">\\x' + c.charCodeAt(0).toString(16).padStart(2, '0') + '</span>';
+		var printable = rawCapture.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]/g, function (c) {
+			return '\\x' + c.charCodeAt(0).toString(16).padStart(2, '0');
 		});
 		lines.push('<div style="margin:4px 0;">');
-		lines.push('  <div style="font-size:10px;color:#6b7280;margin-bottom:2px;">📡 [' + timestamp + '] Raw serial capture:</div>');
-		lines.push('  <pre style="font-size:11px;background:#1e1e2e;color:#cdd6f4;padding:8px;border-radius:4px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:160px;overflow-y:auto;">' + esc(rawCapture).substring(0, 2000) + (rawCapture.length > 2000 ? '\n… (truncated)' : '') + '</pre>');
+		lines.push('<div style="font-size:10px;color:#6b7280;margin-bottom:2px;">📡 [' + timestamp + '] Raw serial capture:</div>');
+		lines.push('<pre style="font-size:11px;background:#1e1e2e;color:#cdd6f4;padding:8px;border-radius:4px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:160px;overflow-y:auto;">' + esc(printable).substring(0, 2000) + (printable.length > 2000 ? '\n… (truncated)' : '') + '</pre>');
 		lines.push('</div>');
 	}
 
-	outf(lines.join('\n'));
-	QtBlockPy.openTerminalDrawer();
+	outf(lines.join(''));
+	if (options.openDrawer !== false) QtBlockPy.openTerminalDrawer();
 };
 
 QtBlockPy.probeMicroPythonAndFiles = async function () {
@@ -859,11 +871,11 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 	if (mpyBadge) {
 		mpyBadge.style.background = '#fef3c7';
 		mpyBadge.style.color = '#92400e';
-		mpyBadge.textContent = 'Probing REPL...';
+		mpyBadge.textContent = 'Checking board...';
 	}
 	if (refreshIcon) refreshIcon.classList.add('fa-spin');
 	if (mpyContent) {
-		mpyContent.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);padding:6px 0;"><span class="fa fa-spinner fa-spin"></span> Checking MicroPython capability and reading files...</div>';
+		mpyContent.innerHTML = '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);padding:6px 0;"><span class="fa fa-spinner fa-spin"></span> Checking board firmware and Python files...</div>';
 	}
 
 	await QtBlockPy.stopSerialStream();
@@ -894,7 +906,9 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 		reader = port.readable.getReader();
 		QtBlockPy._activeReader = reader;
 		var textEncoder = new TextEncoder();
-		var textDecoder = new TextDecoder();
+		// Latin-1 preserves Firmata protocol bytes while all MicroPython markers
+		// used below remain ordinary ASCII.
+		var textDecoder = new TextDecoder('latin1');
 		var allCapture = ''; // accumulates ALL bytes received during the entire probe
 
 		function readUntil(delimiter, timeoutMs) {
@@ -939,7 +953,54 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 			return readPromise;
 		}
 
-		// 1. Enter raw REPL — try once, then retry after a 2-second delay.
+		// 1. Ask for Firmata identity before sending any MicroPython control bytes.
+		// A Firmata board belongs in Code2Play mode and must never be presented as
+		// a failed Python console session.
+		await writer.write(new Uint8Array([0xF0, 0x79, 0xF7]));
+		var firmataCapture = await readUntil(String.fromCharCode(0xF7), 900);
+		var initialClassification = QtBlockPy.classifySerialOutput(firmataCapture);
+
+		// End the bounded Firmata read cleanly before starting a new probe cycle.
+		isReading = false;
+		try { if (writer) { writer.releaseLock(); writer = null; QtBlockPy._activeWriter = null; } } catch (_) {}
+		try {
+			if (reader) {
+				if (reader.cancel) await reader.cancel();
+				try { reader.releaseLock(); } catch (_) {}
+				reader = null;
+				QtBlockPy._activeReader = null;
+			}
+		} catch (_) {}
+		try { await port.close(); } catch (_) {}
+
+		if (initialClassification.type === 'arduino') {
+			if (mpyBadge) {
+				mpyBadge.style.background = '#fee2e2';
+				mpyBadge.style.color = '#991b1b';
+				mpyBadge.textContent = 'MicroPython required';
+			}
+			if (mpyContent) {
+				mpyContent.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);line-height:1.45;padding:2px 0;">' +
+					'<div style="display:flex;align-items:center;gap:8px;font-weight:700;color:#991b1b;margin-bottom:5px;">' +
+					'<span class="fa fa-exclamation-circle"></span> This board is in Code2Play mode</div>' +
+					'<div>QtBlocks needs MicroPython firmware. Your Firmata firmware is working, but it is for Code2Play.</div>' +
+					'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">' +
+					'<button type="button" class="btn-mpy-action" onclick="QtBlockPy.openHardwareFlasher()"><span class="fa fa-bolt"></span> Open Hardware Flasher</button>' +
+					'<button type="button" class="btn-mpy-action" onclick="QtBlockPy.probeMicroPythonAndFiles()"><span class="fa fa-refresh"></span> Check Board Again</button>' +
+					'</div></div>';
+			}
+			return;
+		}
+
+		// Re-open only after Firmata has been ruled out.
+		await port.open({ baudRate: 115200 });
+		writer = port.writable.getWriter();
+		QtBlockPy._activeWriter = writer;
+		reader = port.readable.getReader();
+		QtBlockPy._activeReader = reader;
+		isReading = true;
+
+		// 2. Enter raw REPL — try once, then retry after a 2-second delay.
 		// MicroPython needs ~2-4 s after a fresh flash to mount LittleFS
 		// and bring the REPL up. A single 1.4-second timeout misses that
 		// window and incorrectly shows "Arduino mode".
@@ -1005,7 +1066,7 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 				mpyBadge.textContent = classification.label;
 			}
 
-			var reCheckBtn = '<br><button type="button" class="btn-mpy-action" style="margin-top:8px;" onclick="QtBlockPy.probeMicroPythonAndFiles()"><span class="fa fa-refresh"></span> Re-check REPL</button>';
+			var reCheckBtn = '<button type="button" class="btn-mpy-action" style="margin-top:8px;" onclick="QtBlockPy.probeMicroPythonAndFiles()"><span class="fa fa-refresh"></span> Check Board Again</button>';
 
 			if (classification.type === 'crash') {
 				if (mpyContent) {
@@ -1026,8 +1087,10 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 						'</div>' +
 						'Your board is connected in <strong>Arduino / Serial Mode</strong> (supports Firmata &amp; direct serial communication for Code2Play / Arduino apps).' +
 						'<div style="margin-top:8px;font-size:11.5px;color:var(--text-tertiary);">' +
-						'💡 <em>To switch to Python mode, flash MicroPython firmware via <strong>Hardware Flasher</strong>.</em>' +
-						reCheckBtn +
+						'To use QtBlocks, install MicroPython firmware.' +
+						'<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+						'<button type="button" class="btn-mpy-action" style="margin-top:8px;" onclick="QtBlockPy.openHardwareFlasher()"><span class="fa fa-bolt"></span> Open Hardware Flasher</button>' +
+						reCheckBtn + '</div>' +
 						'</div>' +
 						'</div>';
 				}
@@ -1042,8 +1105,11 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 				}
 			}
 
-			// Always emit serial capture to terminal so the user can see raw output.
-			QtBlockPy.emitSerialLog(classification, allCapture);
+			// Keep automatic board checks in the setup card. Store meaningful
+			// diagnostics without forcing the console drawer open.
+			if (classification.type === 'crash' || (allCapture && allCapture.trim())) {
+				QtBlockPy.emitSerialLog(classification, allCapture, { openDrawer: false });
+			}
 			return;
 		}
 
@@ -1084,10 +1150,12 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 				mpyBadge.textContent = 'MicroPython v' + info.ver + ' (' + info.plat + ')';
 			}
 
-			// Emit a confirmation log to terminal
+			// Keep the confirmation available for diagnostics without interrupting
+			// the learner by opening the console drawer.
 			QtBlockPy.emitSerialLog(
-				{ type: 'micropython', label: '🐍 MicroPython v' + info.ver + ' (' + info.plat + ')', color: '#065f46', bg: '#d1fae5', details: 'REPL handshake succeeded. Board ready for Python upload.', advice: null },
-				allCapture.substring(0, 400) // only show the REPL banner, not the whole file listing
+				{ type: 'micropython', label: '🐍 MicroPython v' + info.ver + ' (' + info.plat + ')', color: '#065f46', bg: '#d1fae5', details: 'Python connection succeeded. Board ready for upload.', advice: null },
+				allCapture.substring(0, 400), // only show the Python banner, not the whole file listing
+				{ openDrawer: false }
 			);
 
 			QtBlockPy.renderMicroPythonFiles(info.files);
@@ -1098,11 +1166,12 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 				mpyBadge.textContent = 'MicroPython Active';
 			}
 			if (mpyContent) {
-				mpyContent.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);">MicroPython REPL is ready. No files returned or listing timed out.</div>';
+				mpyContent.innerHTML = '<div style="font-size:12px;color:var(--text-secondary);">MicroPython is ready. The file list did not respond in time.</div>';
 			}
 			QtBlockPy.emitSerialLog(
-				{ type: 'micropython', label: '🐍 MicroPython Active', color: '#065f46', bg: '#d1fae5', details: 'REPL handshake succeeded, but file listing timed out.', advice: null },
-				allCapture.substring(0, 400)
+				{ type: 'micropython', label: '🐍 MicroPython Active', color: '#065f46', bg: '#d1fae5', details: 'Python connection succeeded, but file listing timed out.', advice: null },
+				allCapture.substring(0, 400),
+				{ openDrawer: false }
 			);
 		}
 	} catch (err) {
@@ -1113,7 +1182,7 @@ QtBlockPy.probeMicroPythonAndFiles = async function () {
 			mpyBadge.textContent = 'Check Failed';
 		}
 		if (mpyContent) {
-			mpyContent.innerHTML = '<div style="font-size:12px;color:#991b1b;">Could not communicate with REPL: ' + (err.message || err) + '</div>';
+			mpyContent.innerHTML = '<div style="font-size:12px;color:#991b1b;">Could not communicate with the board: ' + (err.message || err) + '</div>';
 		}
 	} finally {
 		isReading = false;
