@@ -74,7 +74,7 @@
 				<button id="btn_fakeload" class="ui-button btn-nav" title="Open / Load File (.xml, .py)">
 					<span class="material-icons">folder_open</span>
 				</button>
-				<input type="file" id="load" accept=".xml,.py" style="display: none;" />
+				<input type="file" id="load" accept=".xml,.py,.ino,.qtpi.json" style="display: none;" />
 				<button id="btn_saveXML" class="ui-button btn-nav" title="Save XML">
 					<span class="material-icons">save</span>
 				</button>
@@ -303,6 +303,16 @@
 				</div>
 			</div>
 		</div>
+		<div id="project-filebar" class="project-filebar" aria-label="Project files">
+			<div id="project-file-tabs" class="project-file-tabs"></div>
+			<div class="project-file-actions">
+				<button type="button" id="btn_project_new_file" title="New Python file">＋ File</button>
+				<button type="button" id="btn_project_rename_file" title="Rename selected file">Rename</button>
+				<button type="button" id="btn_project_delete_file" title="Delete selected file">Delete</button>
+				<button type="button" id="btn_project_upload" title="Copy every project file to the connected board">Upload Project</button>
+				<button type="button" id="btn_project_export" title="Download this complete project">Export Project</button>
+			</div>
+		</div>
 		<div role="tabpanel" id="content_code" class="workspace-pane"></div>
 
 	</div>
@@ -325,6 +335,29 @@
 		</div>
 		<div class="terminal-drawer-body">
 			<pre id="console"></pre>
+		</div>
+	</div>
+
+	<!-- App-native text input used by Blockly and file operations. Browser prompt() is unavailable in Electron. -->
+	<div class="dialog-overlay" id="textPromptDialog" tabindex="-1" role="dialog" aria-labelledby="textPromptTitle"
+		aria-hidden="true" data-dialog-static="true">
+		<div class="dialog-panel dialog-panel-sm">
+			<div class="dialog-surface">
+				<form id="textPromptForm">
+					<div class="dialog-header">
+						<span class="dialog-title" id="textPromptTitle">Enter a name</span>
+					</div>
+					<div class="dialog-body">
+						<label class="prompt-field-label" id="textPromptLabel" for="textPromptInput">Name</label>
+						<input class="prompt-field-input" id="textPromptInput" type="text" autocomplete="off" />
+						<div class="prompt-field-error" id="textPromptError" role="alert"></div>
+					</div>
+					<div class="dialog-footer">
+						<button type="button" class="ui-button" id="textPromptCancel">Cancel</button>
+						<button type="submit" class="ui-button dialog-primary-button" id="textPromptAccept">Continue</button>
+					</div>
+				</form>
+			</div>
 		</div>
 	</div>
 

@@ -20,6 +20,364 @@ var terminal_state = "close";
 var com = 'none';
 var lang = "en";
 var exe_type = 'none';
+QtBlockPy._textPromptResolver = null;
+QtBlockPy._textPromptValidator = null;
+
+QtBlockPy.finishTextPrompt = function (value) {
+	var dialog = document.getElementById('textPromptDialog');
+	var resolver = QtBlockPy._textPromptResolver;
+	QtBlockPy._textPromptResolver = null;
+	QtBlockPy._textPromptValidator = null;
+	if (dialog && window.QtUI && QtUI.closeDialog) QtUI.closeDialog(dialog);
+	if (resolver) resolver(value);
+};
+
+QtBlockPy.requestText = function (options) {
+	options = options || {};
+	return new Promise(function (resolve) {
+		var dialog = document.getElementById('textPromptDialog');
+		var title = document.getElementById('textPromptTitle');
+		var label = document.getElementById('textPromptLabel');
+		var input = document.getElementById('textPromptInput');
+		var error = document.getElementById('textPromptError');
+		if (!dialog || !input || !window.QtUI || !QtUI.openDialog) {
+			resolve(null);
+			return;
+		}
+		if (QtBlockPy._textPromptResolver) QtBlockPy.finishTextPrompt(null);
+		QtBlockPy._textPromptResolver = resolve;
+		QtBlockPy._textPromptValidator = options.validate || null;
+		title.textContent = options.title || 'Enter a name';
+		label.textContent = options.label || options.message || 'Name';
+		input.value = options.initialValue || '';
+		error.textContent = '';
+		QtUI.openDialog(dialog, document.activeElement);
+		setTimeout(function () { input.focus(); input.select(); }, 0);
+	});
+};
+
+QtBlockPy.setupTextPrompt = function () {
+	var form = document.getElementById('textPromptForm');
+	var cancel = document.getElementById('textPromptCancel');
+	var input = document.getElementById('textPromptInput');
+	var error = document.getElementById('textPromptError');
+	if (!form || form.dataset.bound === 'true') return;
+	form.dataset.bound = 'true';
+	form.addEventListener('submit', function (event) {
+		event.preventDefault();
+		var value = input.value.trim();
+		var validation = QtBlockPy._textPromptValidator ? QtBlockPy._textPromptValidator(value) : null;
+		if (validation) {
+			error.textContent = validation;
+			input.focus();
+			return;
+		}
+		QtBlockPy.finishTextPrompt(value);
+	});
+	cancel.addEventListener('click', function () { QtBlockPy.finishTextPrompt(null); });
+
+	if (window.Blockly && Blockly.dialog && Blockly.dialog.setPrompt) {
+		Blockly.dialog.setPrompt(function (message, defaultValue, callback) {
+			QtBlockPy.requestText({
+				title: 'Create variable',
+				label: message,
+				initialValue: defaultValue || '',
+				validate: function (value) { return value ? null : 'Enter a variable name.'; }
+			}).then(function (value) { callback(value); });
+		});
+	}
+};
+
+QtBlockPy.PROJECT_STORAGE_KEY = 'qtblocks-project-v1';
+QtBlockPy.project = null;
+QtBlockPy._projectEditorUpdate = false;
+
+QtBlockPy.createDefaultProject = function () {
+	return {
+		schemaVersion: 1,
+		name: 'My QtPi Project',
+		entryFile: 'main.py',
+		activeFile: 'main.py',
+		files: { 'main.py': '' },
+		blocksXml: '',
+		targetBoard: window.localStorage.card || 'qtneo'
+	};
+};
+
+QtBlockPy.validateProjectFilename = function (value) {
+	var name = String(value || '').trim();
+	if (!/^[A-Za-z0-9][A-Za-z0-9._-]*\.py$/.test(name)) return 'Use a simple Python file name ending in .py.';
+	if (name.length > 64) return 'Keep file names to 64 characters or fewer.';
+	return null;
+};
+
+QtBlockPy.persistProject = function () {
+	if (!QtBlockPy.project) return;
+	try { window.localStorage.setItem(QtBlockPy.PROJECT_STORAGE_KEY, JSON.stringify(QtBlockPy.project)); } catch (_) {}
+};
+
+QtBlockPy.syncActiveProjectFile = function () {
+	if (!QtBlockPy.project || !window.editor || QtBlockPy._projectEditorUpdate) return;
+	QtBlockPy.project.files[QtBlockPy.project.activeFile] = editor.getValue();
+	QtBlockPy.persistProject();
+};
+
+QtBlockPy.setProjectFilesVisible = function (visible) {
+	var bar = document.getElementById('project-filebar');
+	if (bar) bar.classList.toggle('is-visible', Boolean(visible));
+	if (window.editor) setTimeout(function () { editor.resize(); }, 0);
+};
+
+QtBlockPy.renderProjectTabs = function () {
+	var tabs = document.getElementById('project-file-tabs');
+	if (!tabs || !QtBlockPy.project) return;
+	tabs.innerHTML = '';
+	Object.keys(QtBlockPy.project.files).forEach(function (filename) {
+		var button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'project-file-tab' + (filename === QtBlockPy.project.activeFile ? ' is-active' : '');
+		button.textContent = filename === QtBlockPy.project.entryFile ? filename + ' ★' : filename;
+		button.title = filename === QtBlockPy.project.entryFile ? 'Project start file' : 'Open ' + filename;
+		button.addEventListener('click', function () { QtBlockPy.openProjectFile(filename); });
+		tabs.appendChild(button);
+	});
+};
+
+QtBlockPy.openProjectFile = function (filename) {
+	if (!QtBlockPy.project || !Object.prototype.hasOwnProperty.call(QtBlockPy.project.files, filename)) return;
+	QtBlockPy.syncActiveProjectFile();
+	QtBlockPy.project.activeFile = filename;
+	QtBlockPy._projectEditorUpdate = true;
+	editor.session.setMode('ace/mode/python');
+	editor.setValue(QtBlockPy.project.files[filename], 1);
+	QtBlockPy._projectEditorUpdate = false;
+	QtBlockPy.persistProject();
+	QtBlockPy.renderProjectTabs();
+};
+
+QtBlockPy.uniqueProjectFilename = function (filename) {
+	if (!Object.prototype.hasOwnProperty.call(QtBlockPy.project.files, filename)) return filename;
+	var base = filename.replace(/\.py$/i, '');
+	var index = 2;
+	while (QtBlockPy.project.files[base + '-' + index + '.py'] !== undefined) index++;
+	return base + '-' + index + '.py';
+};
+
+QtBlockPy.projectOpenImportedFile = function (filename, content) {
+	if (!QtBlockPy.project) QtBlockPy.project = QtBlockPy.createDefaultProject();
+	var safeName = QtBlockPy.normalizeDownloadFilename(filename, '.py');
+	if (QtBlockPy.validateProjectFilename(safeName)) safeName = 'imported.py';
+	if (QtBlockPy.project.files[safeName] !== undefined && safeName !== QtBlockPy.project.activeFile) {
+		safeName = QtBlockPy.uniqueProjectFilename(safeName);
+	}
+	QtBlockPy.syncActiveProjectFile();
+	QtBlockPy.project.files[safeName] = String(content || '');
+	QtBlockPy.openProjectFile(safeName);
+	QtBlockPy.setProjectFilesVisible(true);
+};
+
+QtBlockPy.newProjectFile = async function () {
+	var value = await QtBlockPy.requestText({
+		title: 'New project file',
+		label: 'Python file name',
+		initialValue: 'module.py',
+		validate: function (name) {
+			var error = QtBlockPy.validateProjectFilename(name);
+			if (error) return error;
+			return QtBlockPy.project.files[name] !== undefined ? 'A file with this name already exists.' : null;
+		}
+	});
+	if (value === null) return;
+	QtBlockPy.syncActiveProjectFile();
+	QtBlockPy.project.files[value] = '';
+	QtBlockPy.openProjectFile(value);
+};
+
+QtBlockPy.renameProjectFile = async function () {
+	var current = QtBlockPy.project.activeFile;
+	var value = await QtBlockPy.requestText({
+		title: 'Rename project file',
+		label: 'Python file name',
+		initialValue: current,
+		validate: function (name) {
+			var error = QtBlockPy.validateProjectFilename(name);
+			if (error) return error;
+			return name !== current && QtBlockPy.project.files[name] !== undefined ? 'A file with this name already exists.' : null;
+		}
+	});
+	if (value === null || value === current) return;
+	QtBlockPy.syncActiveProjectFile();
+	QtBlockPy.project.files[value] = QtBlockPy.project.files[current];
+	delete QtBlockPy.project.files[current];
+	if (QtBlockPy.project.entryFile === current) QtBlockPy.project.entryFile = value;
+	QtBlockPy.project.activeFile = value;
+	QtBlockPy.persistProject();
+	QtBlockPy.renderProjectTabs();
+};
+
+QtBlockPy.deleteProjectFile = function () {
+	var names = Object.keys(QtBlockPy.project.files);
+	if (names.length <= 1) {
+		QtBlockPy.showFriendlyError('A project needs at least one Python file.');
+		return;
+	}
+	var current = QtBlockPy.project.activeFile;
+	delete QtBlockPy.project.files[current];
+	var next = Object.keys(QtBlockPy.project.files)[0];
+	if (QtBlockPy.project.entryFile === current) QtBlockPy.project.entryFile = next;
+	QtBlockPy.project.activeFile = next;
+	QtBlockPy._projectEditorUpdate = true;
+	editor.setValue(QtBlockPy.project.files[next], 1);
+	QtBlockPy._projectEditorUpdate = false;
+	QtBlockPy.persistProject();
+	QtBlockPy.renderProjectTabs();
+};
+
+QtBlockPy.exportProject = function () {
+	QtBlockPy.syncActiveProjectFile();
+	if (QtBlockPy.workspace) {
+		QtBlockPy.project.blocksXml = Blockly.Xml.domToPrettyText(Blockly.Xml.workspaceToDom(QtBlockPy.workspace));
+	}
+	QtBlockPy.project.targetBoard = window.localStorage.card || 'qtneo';
+	QtBlockPy.download('qtpi-project.qtpi.json', JSON.stringify(QtBlockPy.project, null, 2));
+};
+
+QtBlockPy.uploadProjectToBoard = async function () {
+	var port = QtBlockPy.selectedVedaPort;
+	if (!port) {
+		QtBlockPy.showFriendlyError('Connect a QtPi Veda board before uploading the project.');
+		return;
+	}
+	QtBlockPy.syncActiveProjectFile();
+	var files = Object.assign({}, QtBlockPy.project.files);
+	if (!Object.prototype.hasOwnProperty.call(files, 'main.py')) {
+		files['main.py'] = 'exec(open(' + JSON.stringify(QtBlockPy.project.entryFile) + ').read(), globals())\n';
+	}
+	var totalSize = Object.keys(files).reduce(function (sum, name) { return sum + files[name].length; }, 0);
+	if (totalSize > 256 * 1024) {
+		QtBlockPy.showFriendlyError('This project is too large for one classroom upload. Keep the Python files below 256 KB.');
+		return;
+	}
+
+	await QtBlockPy.stopSerialStream();
+	var reader = null;
+	var writer = null;
+	var reading = true;
+	try {
+		if (!port.readable || !port.writable) await port.open({ baudRate: 115200 });
+		reader = port.readable.getReader();
+		writer = port.writable.getWriter();
+		QtBlockPy._activeReader = reader;
+		QtBlockPy._activeWriter = writer;
+		var encoder = new TextEncoder();
+		var decoder = new TextDecoder();
+
+		async function readUntil(marker, timeoutMs) {
+			var buffer = '';
+			var deadline = Date.now() + timeoutMs;
+			while (reading && Date.now() < deadline) {
+				var remaining = deadline - Date.now();
+				var result = await Promise.race([
+					reader.read(),
+					new Promise(function (resolve) { setTimeout(function () { resolve({ timeout: true }); }, remaining); })
+				]);
+				if (result.timeout || result.done) break;
+				if (result.value) buffer += decoder.decode(result.value);
+				if (buffer.includes(marker)) return buffer;
+			}
+			return buffer;
+		}
+
+		QtBlockPy.showFeedbackToast('Opening the board workspace...');
+		await writer.write(encoder.encode('\r\x03\x03\x01'));
+		var banner = await readUntil('raw REPL', 3500);
+		if (!banner.includes('raw REPL')) throw new Error('The board did not enter the MicroPython console.');
+
+		var names = Object.keys(files);
+		for (var index = 0; index < names.length; index++) {
+			var filename = names[index];
+			var marker = '__QTPI_FILE_' + index + '_OK__';
+			var base64 = btoa(unescape(encodeURIComponent(files[filename])));
+			var script = 'import ubinascii\r\n' +
+				'_d=ubinascii.a2b_base64("' + base64 + '")\r\n' +
+				'with open(' + JSON.stringify(filename) + ',"wb") as _f:\r\n _f.write(_d)\r\n' +
+				'print("' + marker + '")\r\n';
+			QtBlockPy.showFeedbackToast('Uploading ' + filename + ' (' + (index + 1) + '/' + names.length + ')...');
+			await writer.write(encoder.encode(script + '\x04'));
+			var response = await readUntil(marker, 7000);
+			if (!response.includes(marker)) throw new Error('The board did not confirm ' + filename + '.');
+		}
+		await writer.write(encoder.encode('\x02\x04'));
+		QtBlockPy.showFeedbackToast('Project uploaded. The board is restarting now.');
+	} catch (error) {
+		QtBlockPy.showFriendlyError('Project upload failed: ' + (error.message || error));
+	} finally {
+		reading = false;
+		try { if (reader) { await reader.cancel(); reader.releaseLock(); } } catch (_) {}
+		try { if (writer) writer.releaseLock(); } catch (_) {}
+		try { await port.close(); } catch (_) {}
+		QtBlockPy['_activeReader'] = null;
+		QtBlockPy['_activeWriter'] = null;
+	}
+};
+
+QtBlockPy.importProject = function (text) {
+	var parsed = JSON.parse(text);
+	if (parsed.schemaVersion !== 1 || !parsed.files || typeof parsed.files !== 'object') throw new Error('This is not a supported QtPi project file.');
+	var names = Object.keys(parsed.files);
+	if (!names.length || names.some(function (name) { return QtBlockPy.validateProjectFilename(name); })) throw new Error('The project contains an invalid Python file name.');
+	if (names.length > 50) throw new Error('A project can contain at most 50 Python files.');
+	var safeFiles = {};
+	var totalSize = 0;
+	names.forEach(function (name) {
+		var content = String(parsed.files[name] || '');
+		totalSize += content.length;
+		safeFiles[name] = content;
+	});
+	if (totalSize > 1024 * 1024) throw new Error('This project is larger than the 1 MB classroom project limit.');
+	if (!parsed.entryFile || parsed.files[parsed.entryFile] === undefined) throw new Error('The project start file is missing.');
+	QtBlockPy.project = {
+		schemaVersion: 1,
+		name: String(parsed.name || 'My QtPi Project'),
+		entryFile: parsed.entryFile,
+		activeFile: parsed.files[parsed.activeFile] !== undefined ? parsed.activeFile : parsed.entryFile,
+		files: safeFiles,
+		blocksXml: String(parsed.blocksXml || ''),
+		targetBoard: String(parsed.targetBoard || 'qtneo')
+	};
+	if (QtBlockPy.project.blocksXml && QtBlockPy.workspace) {
+		QtBlockPy.workspace.clear();
+		QtBlockPy.loadBlocks(QtBlockPy.project.blocksXml);
+	}
+	QtBlockPy.openProjectFile(QtBlockPy.project.activeFile);
+	QtBlockPy.setProjectFilesVisible(true);
+};
+
+QtBlockPy.initProjectWorkspace = function () {
+	try {
+		var stored = JSON.parse(window.localStorage.getItem(QtBlockPy.PROJECT_STORAGE_KEY) || 'null');
+		var validStoredProject = stored && stored.schemaVersion === 1 && stored.files &&
+			typeof stored.files === 'object' && !Array.isArray(stored.files) &&
+			Object.keys(stored.files).length > 0;
+		QtBlockPy.project = validStoredProject ? stored : QtBlockPy.createDefaultProject();
+	} catch (_) {
+		QtBlockPy.project = QtBlockPy.createDefaultProject();
+	}
+	if (!QtBlockPy.project.activeFile || QtBlockPy.project.files[QtBlockPy.project.activeFile] === undefined) {
+		QtBlockPy.project.activeFile = QtBlockPy.project.files[QtBlockPy.project.entryFile] !== undefined
+			? QtBlockPy.project.entryFile
+			: Object.keys(QtBlockPy.project.files)[0];
+	}
+	if (window.localStorage.content === 'off' && window.editor) {
+		QtBlockPy._projectEditorUpdate = true;
+		editor.session.setMode('ace/mode/python');
+		editor.setValue(String(QtBlockPy.project.files[QtBlockPy.project.activeFile] || ''), 1);
+		QtBlockPy._projectEditorUpdate = false;
+	}
+	QtBlockPy.renderProjectTabs();
+	if (window.editor && editor.session) editor.session.on('change', QtBlockPy.syncActiveProjectFile);
+	QtBlockPy.setProjectFilesVisible(window.localStorage.content === 'off');
+};
 // import { Blockp5 } from "./blockp5.js";
 // var blockp5 = new Blockp5(blocklyManager.workspace);
 
@@ -66,6 +424,8 @@ QtBlockPy.init = function () {
 	QtBlockPy.workspace = Blockly.inject('content_blocks', { grid: { snap: true }, sounds: true, media: 'media/', toolbox: QtBlockPy.buildToolbox(), zoom: { controls: true, wheel: true } });
 	Blockly.getMainWorkspace().setTheme(Blockly.Themes.HighContrast);
 	QtBlockPy.bindFunctions();
+	QtBlockPy.setupTextPrompt();
+	QtBlockPy.initProjectWorkspace();
 	QtBlockPy.workspace.addChangeListener(QtBlockPy.renderCodePreview);
 	QtBlockPy.workspace.render();
 	QtBlockPy.loadFile();
@@ -107,8 +467,9 @@ QtBlockPy.loadFile = function () {
 					enableSnippets: true,
 					enableLiveAutocompletion: true
 				});
-				editor.setValue(data, 1);
+				QtBlockPy.projectOpenImportedFile((urlFile.split('/').pop() || 'main.py').split('?')[0], data);
 			}
+			QtBlockPy.setProjectFilesVisible(true);
 		}, 'text');
 		return;
 	}
@@ -131,6 +492,7 @@ QtBlockPy.loadFile = function () {
 				});
 				editor.setValue(data, 1);
 			}
+			QtBlockPy.setProjectFilesVisible(false);
 		}, 'text');
 		return;
 	}
@@ -1716,7 +2078,19 @@ QtBlockPy.load = function (event) {
 	reader.onloadend = function (event) {
 		var target = event.target;
 		if (target.readyState == 2) {
-			if (files[0].name.endsWith("ino")) {
+			var filename = files[0].name.toLowerCase();
+			if (filename.endsWith('.qtpi.json')) {
+				try {
+					QtBlockPy.importProject(target.result);
+					QtUI.setToggle('#codeORblock', 'off');
+					QtUI.showPane('#content_code');
+					window.localStorage.content = 'off';
+				} catch (error) {
+					QtBlockPy.showFriendlyError(error.message);
+				}
+				return;
+			}
+			if (filename.endsWith(".ino")) {
 				QtUI.setToggle("#codeORblock", "off");
 				QtUI.showPane("#content_code");
 				$('#btn_print').addClass("hidden");
@@ -1730,8 +2104,10 @@ QtBlockPy.load = function (event) {
 					enableLiveAutocompletion: true
 				});
 				editor.setValue(target.result, 1);
+				QtBlockPy.setProjectFilesVisible(false);
+				return;
 			}
-			if (files[0].name.endsWith("py")) {
+			if (filename.endsWith(".py")) {
 				QtUI.setToggle("#codeORblock", "off");
 				QtUI.showPane("#content_code");
 				$('#btn_print').addClass("hidden");
@@ -1744,13 +2120,18 @@ QtBlockPy.load = function (event) {
 					enableSnippets: true,
 					enableLiveAutocompletion: true
 				});
-				editor.setValue(target.result, 1);
+				if (QtBlockPy.projectOpenImportedFile) QtBlockPy.projectOpenImportedFile(files[0].name, target.result);
+				return;
+			}
+			if (!filename.endsWith(".xml")) {
+				QtBlockPy.showFriendlyError('Choose a QtBlocks XML project, Python file, or QtPi project file.');
+				return;
 			}
 			try {
 				var xml = Blockly.Xml.textToDom(target.result);
 
 			} catch (e) {
-				alert(MSG['xmlError'] + '\n' + e);
+				QtBlockPy.showFriendlyError(MSG['xmlError'] + '\n' + e);
 				return;
 			}
 			QtBlockPy.workspace.clear();
@@ -1759,6 +2140,25 @@ QtBlockPy.load = function (event) {
 		}
 	};
 	reader.readAsText(files[0]);
+};
+
+QtBlockPy.showFriendlyError = function (message) {
+	var messageDiv = document.getElementById('messageDIV');
+	var dialog = document.getElementById('message');
+	if (messageDiv && dialog && window.QtUI && QtUI.openDialog) {
+		messageDiv.textContent = message;
+		QtUI.openDialog(dialog, document.activeElement);
+		setTimeout(function () { QtUI.closeDialog(dialog); }, 3500);
+	} else {
+		console.error(message);
+	}
+};
+
+QtBlockPy.normalizeDownloadFilename = function (value, extension) {
+	var name = String(value || '').trim().replace(/[\\/:*?"<>|]/g, '-');
+	if (!name) return null;
+	if (extension && !name.toLowerCase().endsWith(extension.toLowerCase())) name += extension;
+	return name;
 };
 QtBlockPy.backupBlocks = function () {
 	if (typeof Blockly != 'undefined' && window.localStorage) {
@@ -1945,6 +2345,11 @@ QtBlockPy.bindFunctions = function () {
 	$('#btn_saveino').on("click", QtBlockPy.save);
 	$('#btn_save_custom_py').on("click", QtBlockPy.save_custom);
 	$('#btn_saveXML').on("click", QtBlockPy.save_xml);
+	$('#btn_project_new_file').on('click', QtBlockPy.newProjectFile);
+	$('#btn_project_rename_file').on('click', QtBlockPy.renameProjectFile);
+	$('#btn_project_delete_file').on('click', QtBlockPy.deleteProjectFile);
+	$('#btn_project_upload').on('click', QtBlockPy.uploadProjectToBoard);
+	$('#btn_project_export').on('click', QtBlockPy.exportProject);
 
 	$('#btn_copy').on("click", QtBlockPy.copy);
 	$('#boards').on("focus", function () {
@@ -2040,7 +2445,10 @@ QtBlockPy.bindFunctions = function () {
 			$('#btn_run_custom').removeClass("hidden");
 			$('#btn_save_custom_py').removeClass('hidden');
 			window.localStorage.content = "off";
+			QtBlockPy.projectOpenImportedFile(QtBlockPy.project?.activeFile || 'main.py', editor.getValue());
+			QtBlockPy.setProjectFilesVisible(true);
 		} else {
+			QtBlockPy.syncActiveProjectFile();
 			QtUI.showPane("#content_blocks");
 			$('#btn_print').removeClass("hidden");
 			$('#btn_preview').removeClass("hidden");
@@ -2050,6 +2458,7 @@ QtBlockPy.bindFunctions = function () {
 			$('#btn_stop_custom').addClass("hidden");
 			$('#btn_save_custom_py').addClass('hidden');
 			window.localStorage.content = "on";
+			QtBlockPy.setProjectFilesVisible(false);
 		}
 	});
 
@@ -2312,12 +2721,17 @@ QtBlockPy.cardPicture_change = function () {
 	}
 };
 
-QtBlockPy.save = function () {
+QtBlockPy.save = async function () {
 	if (typeof (Storage) !== "undefined") {
-		var filename = prompt("Save file as", "main.py");
+		var filename = await QtBlockPy.requestText({
+			title: 'Save Python file',
+			label: 'File name',
+			initialValue: 'main.py',
+			validate: function (value) { return QtBlockPy.normalizeDownloadFilename(value, '.py') ? null : 'Enter a file name.'; }
+		});
+		if (filename === null) return;
+		filename = QtBlockPy.normalizeDownloadFilename(filename, '.py');
 		var code = Blockly.Python.workspaceToCode(Blockly.getMainWorkspace());
-		//var codeExt = ".py";
-		//QtBlockPy.download(filename + codeExt, code);
 		QtBlockPy.download(filename, code);
 	}
 	else {
@@ -2325,11 +2739,18 @@ QtBlockPy.save = function () {
 	}
 };
 
-QtBlockPy.save_custom = function () {
+QtBlockPy.save_custom = async function () {
 	if (typeof (Storage) !== "undefined") {
-		var filename = prompt("Save file as", "main.py");
+		var currentName = QtBlockPy.project?.activeFile || 'main.py';
+		var filename = await QtBlockPy.requestText({
+			title: 'Save Python file',
+			label: 'File name',
+			initialValue: currentName,
+			validate: function (value) { return QtBlockPy.normalizeDownloadFilename(value, '.py') ? null : 'Enter a file name.'; }
+		});
+		if (filename === null) return;
+		filename = QtBlockPy.normalizeDownloadFilename(filename, '.py');
 		var code = editor.getValue();
-		//var codeExt = ".py";
 		QtBlockPy.download(filename, code);
 	}
 	else {
@@ -2337,14 +2758,18 @@ QtBlockPy.save_custom = function () {
 	}
 };
 
-QtBlockPy.save_xml = function () {
+QtBlockPy.save_xml = async function () {
 	if (typeof (Storage) !== "undefined") {
-		var code = '';
-		var codeExt = '';
-		var filename = prompt("Save file as", "qtpy.xml");
+		var filename = await QtBlockPy.requestText({
+			title: 'Save QtBlocks project',
+			label: 'Project file name',
+			initialValue: 'qtpy.xml',
+			validate: function (value) { return QtBlockPy.normalizeDownloadFilename(value, '.xml') ? null : 'Enter a file name.'; }
+		});
+		if (filename === null) return;
+		filename = QtBlockPy.normalizeDownloadFilename(filename, '.xml');
 		var xmlDom = Blockly.Xml.workspaceToDom(Blockly.getMainWorkspace());
 		var code = Blockly.Xml.domToPrettyText(xmlDom);
-		//codeExt = ".xml";
 		QtBlockPy.download(filename, code);
 		console.log("saved");
 	}
@@ -2756,7 +3181,11 @@ function runit () {
 		Sk.pre = "output";
 		Sk.configure({
 			inputfun: function (prompt) {
-				return window.prompt(prompt);
+				return QtBlockPy.requestText({
+					title: 'Program input',
+					label: prompt || 'Enter a value',
+					initialValue: ''
+				}).then(function (value) { return value === null ? '' : value; });
 			},
 			inputfunTakesPrompt: true,
 			output: outf,

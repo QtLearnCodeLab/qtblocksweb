@@ -143,6 +143,39 @@
   color: var(--text-primary) !important;
 }
 
+.prompt-field-label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+.prompt-field-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  font: inherit;
+}
+
+.prompt-field-input:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+  outline: none;
+}
+
+.prompt-field-error {
+  min-height: 18px;
+  margin-top: 6px;
+  color: var(--color-danger, #b91c1c);
+  font-size: var(--text-xs);
+}
+
 /* Selectors Top Row (Language & Level) */
 .config-selectors-row {
   display: flex !important;
