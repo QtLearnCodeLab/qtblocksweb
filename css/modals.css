@@ -208,7 +208,6 @@
 }
 
 .config-select,
-#languageMenu,
 #toolboxes {
   width: 100% !important;
   height: 38px !important;
@@ -232,13 +231,11 @@
 }
 
 .config-select:hover,
-#languageMenu:hover,
 #toolboxes:hover {
   border-color: var(--color-brand) !important;
 }
 
 .config-select:focus,
-#languageMenu:focus,
 #toolboxes:focus {
   border-color: var(--color-brand) !important;
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
@@ -552,38 +549,40 @@
   border-top: none !important;
 }
 
-.example-project-link {
+.example-name {
   font-family: var(--font-sans) !important;
   font-size: var(--text-sm) !important;
   font-weight: 600 !important;
   color: var(--text-primary) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  text-decoration: none !important;
-  transition: color var(--transition-fast) !important;
 }
 
-.example-project-link:hover {
-  color: var(--color-brand) !important;
-  text-decoration: none !important;
-}
-
-.example-icon-badge {
+.example-open-btn {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 36px !important;
-  height: 36px !important;
+  width: 40px !important;
+  height: 40px !important;
   border-radius: var(--radius-md) !important;
   background-color: var(--color-brand-light) !important;
   color: var(--color-brand) !important;
-  font-size: 16px !important;
-  flex-shrink: 0 !important;
+  border: 1px solid transparent !important;
+  font-size: 18px !important;
+  cursor: pointer !important;
+  margin-right: 10px !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.example-open-btn:hover,
+.example-open-btn:focus-visible {
+  background-color: var(--color-brand) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 .example-action-col {
   text-align: right !important;
+  white-space: nowrap !important;
 }
 
 .example-action-btn {

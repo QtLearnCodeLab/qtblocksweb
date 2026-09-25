@@ -4,7 +4,7 @@
 <head>
 	<link rel="icon" type="image/png" href="media/favicon-qtpi.png" />
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title> QtPi Low Code Platform</title>
+	<title>QtBlockly</title>
 	<!-- JavaScript -->
 	<script type="text/javascript" src="js/skulpt/skulpt.min.js"></script>
 	<script type="text/javascript" src="js/skulpt/skulpt-stdlib.js"></script>
@@ -118,26 +118,15 @@
 
 			<div class="nav-divider"></div>
 
-			<!-- Board Selector Group -->
-			<div class="nav-select-group" title="Select Target Hardware">
-				<button id="btn_card" class="ui-button btn-nav btn-nav-attached" data-dialog-target="#card" title="Board Details">
-					<span class="fa fa-microchip"></span>
-				</button>
-				<select id="boards" class="nav-select" onchange="QtBlockPy.change_card();">
-					<option value="qtneo" selected="selected">QtPi Neo</option>
-					<option value="python">Python</option>
-				</select>
-			</div>
-
 			<!-- Port & Upload Group -->
-			<div class="nav-select-group" title="Serial Port & Upload">
+			<div class="nav-select-group" title="Serial Port & Upload to QtPi">
 				<button id="btn_usb" class="ui-button btn-nav btn-nav-attached" data-dialog-target="#usb" title="Connect & Pair QtPi Veda Board">
 					<span class="fa fa-usb"></span>
 				</button>
 				<select id="portseries" class="nav-select" onchange="QtBlockPy.save_com();">
 					<option value="none">Port: None</option>
 				</select>
-				<button id="btn_flash" class="ui-button btn-nav btn-nav-flash" aria-label="Upload to Board">
+				<button id="btn_flash" class="ui-button btn-nav btn-nav-flash" aria-label="Upload & Run on QtPi" title="Upload & Run on QtPi">
 					<span class="fa fa-arrow-right"></span>
 				</button>
 			</div>
@@ -146,16 +135,16 @@
 		<!-- Right: Run Actions, Code Preview & Utilities -->
 		<div class="navbar-right">
 			<!-- Run/Stop in Blocks mode -->
-			<button id="btn_run" class="ui-button btn-run" title="Run Blocks (Skulpt)">
-				<span class="material-icons">play_arrow</span> <span class="btn-text">Run</span>
+			<button id="btn_run" class="ui-button btn-run" title="Test Python Locally">
+				<span class="material-icons">play_arrow</span> <span class="btn-text">Test Locally</span>
 			</button>
 			<button id="btn_stop" class="ui-button btn-stop hidden" title="Stop Execution">
 				<span class="material-icons">stop</span> <span class="btn-text">Stop</span>
 			</button>
 
 			<!-- Run/Stop in Custom/Code mode -->
-			<button id="btn_run_custom" class="ui-button btn-run hidden" title="Run Python Code (Skulpt)">
-				<span class="material-icons">play_arrow</span> <span class="btn-text">Run</span>
+			<button id="btn_run_custom" class="ui-button btn-run hidden" title="Test Python Locally">
+				<span class="material-icons">play_arrow</span> <span class="btn-text">Test Locally</span>
 			</button>
 			<button id="btn_stop_custom" class="ui-button btn-stop hidden" title="Stop Code Execution">
 				<span class="material-icons">stop</span> <span class="btn-text">Stop</span>
@@ -186,7 +175,7 @@
 					onclick="QtBlockPy.openExternalLink('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html', event)">
 					<span class="material-icons">menu_book</span>
 				</button>
-				<button id="btn_about" class="ui-button btn-nav" data-dialog-target="#aboutModal" title="About QtBlocks">
+				<button id="btn_about" class="ui-button btn-nav" data-dialog-target="#aboutModal" title="About QtBlockly">
 					<span class="material-icons">help_outline</span>
 				</button>
 			</div>
@@ -310,6 +299,8 @@
 				<button type="button" id="btn_project_rename_file" title="Rename selected file">Rename</button>
 				<button type="button" id="btn_project_delete_file" title="Delete selected file">Delete</button>
 				<button type="button" id="btn_project_upload" title="Copy every project file to the connected board">Upload Project</button>
+				<button type="button" id="btn_project_import" title="Open a complete QtPi project">Import Project</button>
+				<input type="file" id="project_import" accept=".qtpi.json" style="display: none;" />
 				<button type="button" id="btn_project_export" title="Download this complete project">Export Project</button>
 			</div>
 		</div>
@@ -388,7 +379,7 @@
 							<div class="about-version-badge" id="versionapp">v2.0.0</div>
 						</div>
 						<div class="about-content-container">
-							<h3 class="about-app-title">QtBlocks Studio</h3>
+							<h3 class="about-app-title">QtBlockly</h3>
 							<p id="aboutBody" class="about-description-text"></p>
 							<div class="about-links-group">
 								<button id="btn_site" class="about-link-btn" onclick="QtBlockPy.openExternalLink('https://qtpi.in/', event)" title="Visit QtPi Website">
@@ -425,9 +416,12 @@
 				</div>
 				<div class="dialog-body config-selectors-row">
 					<div class="config-field-group">
-						<label id="span_languageMenu" class="config-field-label">Language</label>
+						<label for="boards" class="config-field-label">Programming Profile</label>
 						<div class="config-select-wrapper">
-							<select id="languageMenu" class="config-select"></select>
+							<select id="boards" class="config-select" onchange="QtBlockPy.change_card();">
+								<option value="qtneo" selected="selected">QtPi Neo</option>
+								<option value="python">Python</option>
+							</select>
 						</div>
 					</div>
 					<div id="divToolbox" class="config-field-group">

@@ -89,45 +89,17 @@ Code.loadBlocks = function(defaultXml) {
   } else if (loadOnce) {
     // Language switching stores the blocks during the reload.
     delete window.sessionStorage.loadOnceBlocks;
-    var xml = Blockly.Xml.textToDom(loadOnce);
+    var xml = QtBlockPy.textToDom(loadOnce);
     Blockly.Xml.domToWorkspace(xml, Code.workspace);
   } else if (defaultXml) {
     // Load the editor with default starting blocks.
-    var xml = Blockly.Xml.textToDom(defaultXml);
+    var xml = QtBlockPy.textToDom(defaultXml);
     Blockly.Xml.domToWorkspace(xml, Code.workspace);
   } else if ('BlocklyStorage' in window) {
     // Restore saved blocks in a separate thread so that subsequent
     // initialization is not affected from a failed load.
     window.setTimeout(BlocklyStorage.restoreBlocks, 0);
   }
-};
-
-/**
- * Save the blocks and reload with a different language.
- */
-Code.changeLanguage = function() {
-  // Store the blocks for the duration of the reload.
-  // MSIE 11 does not support sessionStorage on file:// URLs.
-  if (window.sessionStorage) {
-    var xml = Blockly.Xml.workspaceToDom(Code.workspace);
-    var text = Blockly.Xml.domToText(xml);
-    window.sessionStorage.loadOnceBlocks = text;
-  }
-
-  var languageMenu = document.getElementById('languageMenu');
-  var newLang = encodeURIComponent(
-      languageMenu.options[languageMenu.selectedIndex].value);
-  var search = window.location.search;
-  if (search.length <= 1) {
-    search = '?lang=' + newLang;
-  } else if (search.match(/[?&]lang=[^&]*/)) {
-    search = search.replace(/([?&]lang=)[^&]*/, '$1' + newLang);
-  } else {
-    search = search.replace(/\?/, '?lang=' + newLang + '&');
-  }
-
-  window.location = window.location.protocol + '//' +
-      window.location.host + window.location.pathname + search;
 };
 
 /**
@@ -223,7 +195,7 @@ Code.tabClick = function(clickedName) {
     var xmlText = xmlTextarea.value;
     var xmlDom = null;
     try {
-      xmlDom = Blockly.Xml.textToDom(xmlText);
+      xmlDom = QtBlockPy.textToDom(xmlText);
     } catch (e) {
       var q =
           window.confirm(MSG['badXml'].replace('%1', e));
@@ -399,7 +371,7 @@ Code.init = function() {
     var toolboxText = document.getElementById('toolbox').outerHTML;
     toolboxText = toolboxText.replace(/(^|[^%]){(\w+)}/g,
       function (m, p1, p2) { return p1 + MSG[p2]; });
-    var toolboxXml = Blockly.Xml.textToDom(toolboxText);
+    var toolboxXml = QtBlockPy.textToDom(toolboxText);
 
     Code.workspace = Blockly.inject('content_blocks',
       {
@@ -479,25 +451,6 @@ Code.initLanguage = function () {
   var rtl = Code.isRtl();
   $("html").attr('dir', rtl ? 'rtl' : 'ltr');
   $("html").attr('lang', Code.LANG);
-  var languages = [];
-  for (var lang in Code.LANGUAGE_NAME) {
-    languages.push([Code.LANGUAGE_NAME[lang], lang]);
-  }
-  var comp = function (a, b) {
-    if (a[0] > b[0]) return 1;
-    if (a[0] < b[0]) return -1;
-    return 0;
-  };
-  languages.sort(comp);
-  var languageMenu = $('#languageMenu');
-  languageMenu.empty();
-  for (var i = 0; i < languages.length; i++) {
-    var tuple = languages[i];
-    var lang = tuple[tuple.length - 1];
-    var option = new Option(tuple[0], lang);
-    if (lang == Code.LANG) option.selected = true;
-    languageMenu.append(option);
-  }
   $('#aboutBody').text(MSG['aboutBody']);
   $('#warning').text(MSG['nanoWarning']);
   $('#aboutModalLabel').text(MSG['aboutModalLabel']);
@@ -516,7 +469,6 @@ Code.initLanguage = function () {
   $('#span_example').text(MSG['span_example']);
   $('#span_connect_serial').text(MSG['span_connect_serial']);
   $('#span_select_all').text(MSG['span_select_all']);
-  $('#span_languageMenu').text(MSG['span_languageMenu']);
   $('#span_qtblocks').text(MSG['span_qtblocks']);
   $('#span_update').text(MSG['span_update']);
   $('#span_verify_update').text(MSG['span_verify_update']);

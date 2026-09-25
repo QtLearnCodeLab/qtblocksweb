@@ -6556,7 +6556,7 @@ Blockly.defineBlocksWithJsonArray([
   },
   {
     "type": "qtpi_motor_rotate",
-    "message0": "Rotate Motor %1 speed %2 direction %3",
+    "message0": "Rotate Motor %1 speed % %2 direction %3",
     "args0": [
       {
         "type": "input_value",
@@ -7802,7 +7802,7 @@ Blockly.defineBlocksWithJsonArray([
   },
   {
     "type": "qtpi_pumpmotor_run",
-    "message0": "Pump Motor Run %1 speed %2",
+    "message0": "Pump Motor Run %1 speed % %2",
     "args0": [
       {
         "type": "input_value",
@@ -9990,4 +9990,3 @@ Blockly.defineBlocksWithJsonArray([
     },
 };
   
-

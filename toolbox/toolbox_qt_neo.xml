@@ -587,6 +587,7 @@
 				<block type="qtpi_motor_initialize">
 				</block>
 				<block type="qtpi_motor_rotate">
+					<value name="motor_speed"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
 				</block>
 			</category>
 			<category name="OLED" colour="180">
@@ -605,6 +606,7 @@
 				<block type="qtpi_pumpmotor_initialize">
 				</block>
 				<block type="qtpi_pumpmotor_run">
+					<value name="pumpmotor_speed"><shadow type="math_number"><field name="NUM">100</field></shadow></value>
 				</block>
 			</category>
 			<category name="Servo" colour="230">

@@ -272,6 +272,10 @@
   pointer-events: none;
 }
 
+.nav-select-group .btn-nav-flash.is-runtime-hidden {
+  display: none !important;
+}
+
 /* --- Modern Pure CSS Mode Toggle --- */
 .mode-toggle-wrapper {
   display: inline-flex;

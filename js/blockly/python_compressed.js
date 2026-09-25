@@ -2405,7 +2405,7 @@ Blockly.Python['qtpi_motor_rotate'] = function(block) {
   var value_motor_object = Blockly.Python.valueToCode(block, 'motor_object', Blockly.Python.ORDER_MEMBER);
   var value_motor_speed = Blockly.Python.valueToCode(block, 'motor_speed', Blockly.Python.ORDER_NONE);
   var value_motor_direction = Blockly.Python.valueToCode(block, 'motor_direction', Blockly.Python.ORDER_NONE);
-  var code = value_motor_object + '.rotate(speed='+value_motor_speed+', direction='+value_motor_direction+')\n';
+  var code = value_motor_object + '.speed(value=max(0, min(100, '+value_motor_speed+')), direction='+value_motor_direction+')\n';
   return code;
 };
 
@@ -2692,7 +2692,7 @@ Blockly.Python['qtpi_pumpmotor_run'] = function(block) {
   Blockly.Python.definitions_['import_pumpmotor'] = 'from uqtpy.actuators.pumpmotor import PumpMotor';
   var value_pumpmotor_object = Blockly.Python.valueToCode(block, 'pumpmotor_object', Blockly.Python.ORDER_MEMBER);
   var value_pumpmotor_speed = Blockly.Python.valueToCode(block, 'pumpmotor_speed', Blockly.Python.ORDER_NONE);
-  var code = value_pumpmotor_object + '.run(speed='+value_pumpmotor_speed+')\n';
+  var code = value_pumpmotor_object + '.run(speed=int(max(0, min(100, '+value_pumpmotor_speed+')) * 1023 / 100))\n';
   return code;
 };
 
