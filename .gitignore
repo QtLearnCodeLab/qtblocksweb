@@ -129,3 +129,9 @@ dmypy.json
 .pyre/
 .vscode/
 node_modules
+
+# graft's local repository settings — not committed.
+/.graft/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

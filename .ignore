@@ -1,0 +1,4 @@
+# Keep the repository-local Graft cards searchable while excluding its cache.
+!graft/
+graft/.cache/
+graft/.graph/
