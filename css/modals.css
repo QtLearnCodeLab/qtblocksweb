@@ -769,3 +769,85 @@
   border-color: #059669;
   color: #ffffff;
 }
+
+/* --- In-App API Documentation Modal --- */
+.dialog-panel.dialog-panel-docs {
+  max-width: 95vw !important;
+  width: 1240px !important;
+  height: 88vh !important;
+  margin: 4vh auto !important;
+}
+
+.docs-modal-surface {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-radius: var(--radius-xl) !important;
+  overflow: hidden !important;
+  background-color: #0b0f19 !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+
+.docs-modal-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 20px !important;
+  background-color: #0b1120 !important;
+  border-bottom: 1px solid #1e293b !important;
+}
+
+.docs-modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.docs-header-icon {
+  color: #38bdf8;
+  font-size: 22px;
+}
+
+.docs-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.docs-popout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #38bdf8;
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.docs-popout-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+}
+
+.docs-popout-btn .material-icons {
+  font-size: 15px;
+}
+
+.docs-modal-body {
+  flex: 1 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #0f172a !important;
+}
+
+.docs-iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  display: block !important;
+}

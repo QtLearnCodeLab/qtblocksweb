@@ -2919,6 +2919,28 @@ QtBlockPy.openExternalLink = function (url, event) {
 		window.open(targetUrl, '_blank', 'noopener,noreferrer');
 	}
 };
+QtBlockPy.openDocsModal = function (event) {
+	if (event) {
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	var aboutModal = document.getElementById('aboutModal');
+	if (aboutModal && aboutModal.classList.contains('is-open')) {
+		aboutModal.classList.remove('is-open');
+	}
+	var docsModal = document.getElementById('docsModal');
+	if (docsModal) {
+		docsModal.classList.add('is-open');
+	}
+};
+
+QtBlockPy.openDocsExternal = function (event) {
+	if (event) {
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	QtBlockPy.openExternalLink('./docs/index.html');
+};
 
 QtBlockPy.loadExampleProject = function (sourceUrl) {
 	var fullUrl = "./examples/" + sourceUrl;

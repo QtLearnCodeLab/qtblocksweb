@@ -168,6 +168,9 @@
 				<button id="btn_print" class="ui-button btn-nav" title="Snapshot Workspace" data-tooltip="Snapshot Workspace">
 					<span class="fa fa-camera"></span>
 				</button>
+				<button id="btn_docs" class="ui-button btn-nav" data-dialog-target="#docsModal" title="API Documentation" data-tooltip="API Guide">
+					<span class="material-icons">menu_book</span>
+				</button>
 				<button id="btn_config" class="ui-button btn-nav" data-dialog-target="#configModal" title="Toolbox Config" data-tooltip="Toolbox Settings">
 					<span class="fa fa-cog"></span>
 				</button>
@@ -358,6 +361,31 @@
 			</div>
 		</div>
 	</div>
+	<!-- API documentation dialog -->
+	<div class="dialog-overlay" id="docsModal" tabindex="-1" role="dialog" aria-labelledby="docsModalLabel"
+		aria-hidden="true">
+		<div class="dialog-panel dialog-panel-docs">
+			<div class="dialog-surface docs-modal-surface">
+				<div class="dialog-header docs-modal-header">
+					<div class="docs-modal-title-group">
+						<span class="material-icons docs-header-icon">menu_book</span>
+						<span class="dialog-title" id="docsModalLabel">QtBlockly & MicroPython Guide</span>
+					</div>
+					<div class="docs-header-actions">
+						<button type="button" class="docs-popout-btn" id="btn_docs_popout" title="Open in External Browser" onclick="QtBlockPy.openDocsExternal(event)">
+							<span class="material-icons">open_in_new</span>
+							<span>Pop out</span>
+						</button>
+						<button type="button" class="dialog-close" data-dialog-dismiss aria-label="Close" title="Close Guide"><span
+								aria-hidden="true">&times;</span></button>
+					</div>
+				</div>
+				<div class="dialog-body docs-modal-body">
+					<iframe id="docsIframe" src="./docs/index.html" class="docs-iframe" title="QtBlockly Documentation"></iframe>
+				</div>
+			</div>
+		</div>
+	</div>
 	<!-- about dialog -->
 	<div class="dialog-overlay" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel"
 		aria-hidden="true">
@@ -382,7 +410,7 @@
 									<span class="fa fa-globe"></span>
 									<span id="span_site">Website</span>
 								</button>
-								<button id="btn_about_docs" class="about-link-btn" onclick="QtBlockPy.openExternalLink('./docs/index.html', event)" title="API Documentation">
+								<button id="btn_about_docs" class="about-link-btn" onclick="QtBlockPy.openDocsModal(event)" title="API Documentation">
 									<span class="fa fa-book"></span>
 									<span>API Documentation</span>
 								</button>
