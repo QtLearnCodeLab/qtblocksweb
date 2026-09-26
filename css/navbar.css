@@ -123,8 +123,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 32px;
-  min-width: 40px;
+  height: 34px;
+  min-width: 42px;
   padding: 0 10px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
@@ -143,23 +143,169 @@
   background-color: var(--bg-hover);
   border-color: var(--border-default);
   color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-nav:active {
   background-color: var(--bg-active);
   transform: translateY(1px);
+  box-shadow: none;
 }
 
 .btn-nav .material-icons {
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
   vertical-align: middle;
 }
 
 .btn-nav .fa {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1;
   vertical-align: middle;
+}
+
+/* Intent-Driven Icon Colors & Hover Glows */
+#btn_new .material-icons {
+  color: #0284c7; /* Sky blue */
+}
+#btn_new:hover {
+  background-color: #f0f9ff;
+  border-color: #7dd3fc;
+}
+
+#btn_fakeload .material-icons {
+  color: #d97706; /* Warm amber */
+}
+#btn_fakeload:hover {
+  background-color: #fffbeb;
+  border-color: #fcd34d;
+}
+
+#btn_saveXML .material-icons {
+  color: #16a34a; /* Emerald green */
+}
+#btn_saveXML:hover {
+  background-color: #f0fdf4;
+  border-color: #86efac;
+}
+
+#btn_example .material-icons {
+  color: #7c3aed; /* Creative purple */
+}
+#btn_example:hover {
+  background-color: #faf5ff;
+  border-color: #c4b5fd;
+}
+
+#btn_undo .fa,
+#btn_redo .fa {
+  color: #475569; /* Slate grey */
+}
+#btn_undo:hover,
+#btn_redo:hover {
+  background-color: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+#btn_print .fa {
+  color: #ea580c; /* Coral / Sunset orange */
+}
+#btn_print:hover {
+  background-color: #fff7ed;
+  border-color: #fdba74;
+}
+
+#btn_config .fa {
+  color: #4f46e5; /* Indigo */
+}
+#btn_config:hover {
+  background-color: #eef2ff;
+  border-color: #a5b4fc;
+}
+
+#btn_api_mp .material-icons {
+  color: #0284c7; /* Ocean blue */
+}
+#btn_api_mp:hover {
+  background-color: #f0f9ff;
+  border-color: #7dd3fc;
+}
+
+#btn_about .material-icons {
+  color: #0d9488; /* Teal */
+}
+#btn_about:hover {
+  background-color: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+/* Modern Floating CSS Tooltip */
+.btn-nav[data-tooltip] {
+  position: relative;
+}
+
+.btn-nav[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 5px 9px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+  z-index: 2000;
+}
+
+.btn-nav[data-tooltip]::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  border-width: 0 5px 5px 5px;
+  border-style: solid;
+  border-color: transparent transparent #0f172a transparent;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  z-index: 2000;
+}
+
+.btn-nav[data-tooltip]:hover::after,
+.btn-nav[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  transition-delay: 0.12s;
+}
+
+/* Right-align tooltips on the far right to prevent screen edge overflow */
+.navbar-right .btn-group-nav > :last-child[data-tooltip]::after {
+  left: auto;
+  right: 0;
+  transform: translateY(4px);
+}
+.navbar-right .btn-group-nav > :last-child[data-tooltip]::before {
+  left: auto;
+  right: 14px;
+  transform: translateY(4px);
+}
+.navbar-right .btn-group-nav > :last-child[data-tooltip]:hover::after,
+.navbar-right .btn-group-nav > :last-child[data-tooltip]:hover::before {
+  transform: translateY(0);
 }
 
 /* --- Attached Select Input Groups (Boards & Ports) --- */

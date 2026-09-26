@@ -68,26 +68,26 @@
 			</div>
 			<div class="nav-divider"></div>
 			<div class="btn-group-nav">
-				<button id="btn_new" class="ui-button btn-nav" title="New Project">
+				<button id="btn_new" class="ui-button btn-nav" title="New Project" data-tooltip="New Project">
 					<span class="material-icons">create_new_folder</span>
 				</button>
-				<label for="load" id="btn_fakeload" class="ui-button btn-nav" title="Open / Load File (.xml, .py)" role="button" tabindex="0">
+				<label for="load" id="btn_fakeload" class="ui-button btn-nav" title="Open / Load File (.xml, .py)" data-tooltip="Open File (.xml, .py)" role="button" tabindex="0">
 					<span class="material-icons">folder_open</span>
 				</label>
 				<input type="file" id="load" accept=".xml,.py,.ino,.qtpi.json" style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;" />
-				<button id="btn_saveXML" class="ui-button btn-nav" title="Save XML">
+				<button id="btn_saveXML" class="ui-button btn-nav" title="Save XML" data-tooltip="Save XML Project">
 					<span class="material-icons">save</span>
 				</button>
-				<button id="btn_example" class="ui-button btn-nav" data-dialog-target="#exampleModal" title="Examples">
+				<button id="btn_example" class="ui-button btn-nav" data-dialog-target="#exampleModal" title="Examples" data-tooltip="Examples Library">
 					<span class="material-icons">auto_stories</span>
 				</button>
 			</div>
 			<div class="nav-divider"></div>
 			<div class="btn-group-nav">
-				<button id="btn_undo" class="ui-button btn-nav" title="Undo">
+				<button id="btn_undo" class="ui-button btn-nav" title="Undo" data-tooltip="Undo (Ctrl+Z)">
 					<span class="fa fa-undo"></span>
 				</button>
-				<button id="btn_redo" class="ui-button btn-nav" title="Redo">
+				<button id="btn_redo" class="ui-button btn-nav" title="Redo" data-tooltip="Redo (Ctrl+Y)">
 					<span class="fa fa-repeat"></span>
 				</button>
 			</div>
@@ -165,17 +165,17 @@
 				<button id="btn_save_custom_py" class="ui-button btn-nav hidden" title="Save Python (.py)">
 					<span class="material-icons">save_alt</span>
 				</button>
-				<button id="btn_print" class="ui-button btn-nav" title="Snapshot Workspace">
+				<button id="btn_print" class="ui-button btn-nav" title="Snapshot Workspace" data-tooltip="Snapshot Workspace">
 					<span class="fa fa-camera"></span>
 				</button>
-				<button id="btn_config" class="ui-button btn-nav" data-dialog-target="#configModal" title="Toolbox Config">
+				<button id="btn_config" class="ui-button btn-nav" data-dialog-target="#configModal" title="Toolbox Config" data-tooltip="Toolbox Settings">
 					<span class="fa fa-cog"></span>
 				</button>
-				<button id="btn_api_mp" class="ui-button btn-nav" title="QtPi API Documentation"
+				<button id="btn_api_mp" class="ui-button btn-nav" title="QtPi API Documentation" data-tooltip="MicroPython Documentation"
 					onclick="QtBlockPy.openExternalLink('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html', event)">
 					<span class="material-icons">menu_book</span>
 				</button>
-				<button id="btn_about" class="ui-button btn-nav" data-dialog-target="#aboutModal" title="About QtBlockly">
+				<button id="btn_about" class="ui-button btn-nav" data-dialog-target="#aboutModal" title="About QtBlockly" data-tooltip="About QtBlockly">
 					<span class="material-icons">help_outline</span>
 				</button>
 			</div>

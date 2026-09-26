@@ -489,18 +489,18 @@ Code.initLanguage = function () {
     $('#btn_saveino').attr('title', MSG['btn_save_py']);
   }
   $('#btn_copy').attr('title', MSG['btn_copy']);
-  $('#btn_print').attr('title', MSG['btn_print']);
-  $('#btn_undo').attr('title', MSG['btn_undo']);
-  $('#btn_redo').attr('title', MSG['btn_redo']);
-  $('#btn_search').attr('title', MSG['btn_search']);
-  $('#btn_new').attr('title', MSG['btn_new']);
-  $('#btn_saveXML').attr('title', MSG['btn_saveXML']);
-  $('#btn_fakeload').attr('title', MSG['btn_fakeload']);
+  $('#btn_print').attr('title', MSG['btn_print']).attr('data-tooltip', MSG['btn_print']);
+  $('#btn_undo').attr('title', MSG['btn_undo']).attr('data-tooltip', MSG['btn_undo']);
+  $('#btn_redo').attr('title', MSG['btn_redo']).attr('data-tooltip', MSG['btn_redo']);
+  $('#btn_search').attr('title', MSG['btn_search']).attr('data-tooltip', MSG['btn_search']);
+  $('#btn_new').attr('title', MSG['btn_new']).attr('data-tooltip', MSG['btn_new']);
+  $('#btn_saveXML').attr('title', MSG['btn_saveXML']).attr('data-tooltip', MSG['btn_saveXML']);
+  $('#btn_fakeload').attr('title', MSG['btn_fakeload']).attr('data-tooltip', MSG['btn_fakeload']);
   $('#btn_term').attr('title', MSG['btn_term']);
   $('#btn_factory').attr('title', MSG['btn_factory']);
-  $('#btn_config').attr('title', MSG['btn_config']);
-  $('#btn_about').attr('title', MSG['btn_about']);
-  $('#btn_example').attr('title', MSG['btn_example']);
+  $('#btn_config').attr('title', MSG['btn_config']).attr('data-tooltip', MSG['btn_config']);
+  $('#btn_about').attr('title', MSG['btn_about']).attr('data-tooltip', MSG['btn_about']);
+  $('#btn_example').attr('title', MSG['btn_example']).attr('data-tooltip', MSG['btn_example']);
   $("xml").find("category").each(function () {
     if (!$(this).attr('id')) {
       $(this).attr('id', $(this).attr('name'));
