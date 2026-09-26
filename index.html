@@ -71,10 +71,10 @@
 				<button id="btn_new" class="ui-button btn-nav" title="New Project">
 					<span class="material-icons">create_new_folder</span>
 				</button>
-				<button id="btn_fakeload" class="ui-button btn-nav" title="Open / Load File (.xml, .py)">
+				<label for="load" id="btn_fakeload" class="ui-button btn-nav" title="Open / Load File (.xml, .py)" role="button" tabindex="0">
 					<span class="material-icons">folder_open</span>
-				</button>
-				<input type="file" id="load" accept=".xml,.py,.ino,.qtpi.json" style="display: none;" />
+				</label>
+				<input type="file" id="load" accept=".xml,.py,.ino,.qtpi.json" style="position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;" />
 				<button id="btn_saveXML" class="ui-button btn-nav" title="Save XML">
 					<span class="material-icons">save</span>
 				</button>

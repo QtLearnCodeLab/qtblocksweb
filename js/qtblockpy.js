@@ -2771,7 +2771,16 @@ QtBlockPy.bindFunctions = function () {
 	});
 	$('#load').on("change", QtBlockPy.load);
 	$('#btn_fakeload').on("click", function () {
-		$('#load').click();
+		$('#load').val('');
+		if (this.tagName !== 'LABEL') {
+			$('#load').trigger('click');
+		}
+	});
+	$('#btn_fakeload').on("keydown", function (e) {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			$('#load').val('').trigger('click');
+		}
 	});
 	$('#btn_config').on("click", QtBlockPy.openConfigToolbox);
 	$('#select_all').on("click", QtBlockPy.checkAll);
@@ -2782,10 +2791,15 @@ QtBlockPy.bindFunctions = function () {
 	$('#btn_example').on("click", QtBlockPy.buildExamples);
 	//$('#btn_flash').on('click', QtBlockPy.flash);
 
-	$("#btn_microbit_connect").click(function () {
-		doConnect();
+	window.addEventListener('dragover', function (e) {
+		e.preventDefault();
 	});
-
+	window.addEventListener('drop', function (e) {
+		e.preventDefault();
+		if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length === 1) {
+			QtBlockPy.load({ target: { files: e.dataTransfer.files } });
+		}
+	});
 };
 QtBlockPy.checkAll = function () {
 	if (this.checked) {
