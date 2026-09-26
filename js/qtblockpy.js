@@ -2906,11 +2906,17 @@ QtBlockPy.openExternalLink = function (url, event) {
 		event.stopPropagation();
 	}
 	if (!url) return;
+	var targetUrl = url;
+	try {
+		targetUrl = new URL(url, window.location.href).href;
+	} catch (e) {
+		targetUrl = url;
+	}
 	var electronAPI = window.electronAPI || (window.parent && window.parent.electronAPI);
 	if (electronAPI && typeof electronAPI.openExternal === 'function') {
-		electronAPI.openExternal(url);
+		electronAPI.openExternal(targetUrl);
 	} else {
-		window.open(url, '_blank', 'noopener,noreferrer');
+		window.open(targetUrl, '_blank', 'noopener,noreferrer');
 	}
 };
 
