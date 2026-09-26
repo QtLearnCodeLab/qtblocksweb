@@ -115,7 +115,7 @@
 .btn-group-nav {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 }
 
 /* --- Modern Nav Buttons --- */
@@ -124,8 +124,8 @@
   align-items: center;
   justify-content: center;
   height: 32px;
-  min-width: 32px;
-  padding: 0 var(--space-2);
+  min-width: 40px;
+  padding: 0 10px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background-color: var(--bg-surface);
@@ -151,13 +151,13 @@
 }
 
 .btn-nav .material-icons {
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1;
   vertical-align: middle;
 }
 
 .btn-nav .fa {
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1;
   vertical-align: middle;
 }

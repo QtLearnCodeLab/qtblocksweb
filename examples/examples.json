@@ -7,8 +7,8 @@
         "visible": true
     },
     {
-        "source_url": "motors/motors_forward_reverse_stop.xml",
-        "source_text": "Dual Motors (Forward, Reverse, Stop)",
+        "source_url": "motors/qt_motors.xml",
+        "source_text": "Motors",
         "link_url": "",
         "link_text": "",
         "visible": true
