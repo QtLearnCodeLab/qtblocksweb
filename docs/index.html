@@ -1,463 +1,642 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="./">
+<html lang="en">
 <head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to uqtpy’s documentation! &mdash; uqtpy 0.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
-
-  
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=2709fde1"></script>
-        <script src="_static/doctools.js?v=9a2dae69"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Reference" href="autoapi/index.html" /> 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QtBlockly & MicroPython Guide — QtPi Robotics</title>
+  <link rel="stylesheet" href="css/docs.css">
 </head>
+<body>
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
-
-          
-          
-          <a href="#" class="icon icon-home">
-            uqtpy
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
-</ul>
-
-        </div>
+  <!-- Sidebar Navigation -->
+  <aside class="docs-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">Qt</div>
+      <div class="sidebar-title-group">
+        <h1>QtBlockly Guide</h1>
+        <p>Block-to-Python Learning Reference</p>
       </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">uqtpy</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Welcome to uqtpy’s documentation!</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <section id="welcome-to-uqtpy-s-documentation">
-<h1>Welcome to uqtpy’s documentation!<a class="headerlink" href="#welcome-to-uqtpy-s-documentation" title="Link to this heading"></a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="autoapi/ble/index.html">ble</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="autoapi/ble/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/ble/index.html#ble.imu"><code class="docutils literal notranslate"><span class="pre">imu</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/ble/index.html#ble.mpuservice"><code class="docutils literal notranslate"><span class="pre">mpuservice</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/ble/index.html#ble.qtble"><code class="docutils literal notranslate"><span class="pre">qtble</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/ble/index.html#id0"><code class="docutils literal notranslate"><span class="pre">imu</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/ble/index.html#id1"><code class="docutils literal notranslate"><span class="pre">mpuservice</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/ble/index.html#id2"><code class="docutils literal notranslate"><span class="pre">qtble</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="autoapi/apds/index.html">apds</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="autoapi/apds/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/apds/index.html#apds.apds2"><code class="docutils literal notranslate"><span class="pre">apds2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/apds/index.html#apds.gesture"><code class="docutils literal notranslate"><span class="pre">gesture</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/apds/index.html#id0"><code class="docutils literal notranslate"><span class="pre">apds2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/apds/index.html#id1"><code class="docutils literal notranslate"><span class="pre">gesture</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="autoapi/test/index.html">test</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="autoapi/test/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/test/index.html#test.uri"><code class="docutils literal notranslate"><span class="pre">uri</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="autoapi/uqtpy/index.html">uqtpy</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="autoapi/uqtpy/index.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/uqtpy/actuators/index.html">uqtpy.actuators</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/uqtpy/actuators/index.html#submodules">Submodules</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/actuators/argb/index.html">uqtpy.actuators.argb</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/actuators/argb/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/actuators/argb/index.html#uqtpy.actuators.argb.ARGB"><code class="docutils literal notranslate"><span class="pre">ARGB</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/actuators/buzzer/index.html">uqtpy.actuators.buzzer</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/actuators/buzzer/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/actuators/buzzer/index.html#uqtpy.actuators.buzzer.Buzzer"><code class="docutils literal notranslate"><span class="pre">Buzzer</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/actuators/display/index.html">uqtpy.actuators.display</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/actuators/display/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/actuators/display/index.html#uqtpy.actuators.display.OLED"><code class="docutils literal notranslate"><span class="pre">OLED</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/actuators/led/index.html">uqtpy.actuators.led</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/actuators/led/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/actuators/led/index.html#uqtpy.actuators.led.LED"><code class="docutils literal notranslate"><span class="pre">LED</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/actuators/motor/index.html">uqtpy.actuators.motor</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/actuators/motor/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/actuators/motor/index.html#uqtpy.actuators.motor.Motor"><code class="docutils literal notranslate"><span class="pre">Motor</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/actuators/pumpmotor/index.html">uqtpy.actuators.pumpmotor</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/actuators/pumpmotor/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/actuators/pumpmotor/index.html#uqtpy.actuators.pumpmotor.PumpMotor"><code class="docutils literal notranslate"><span class="pre">PumpMotor</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/actuators/rgb/index.html">uqtpy.actuators.rgb</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/actuators/rgb/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/actuators/rgb/index.html#uqtpy.actuators.rgb.RGB"><code class="docutils literal notranslate"><span class="pre">RGB</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/actuators/servo/index.html">uqtpy.actuators.servo</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/actuators/servo/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/actuators/servo/index.html#uqtpy.actuators.servo.Servo"><code class="docutils literal notranslate"><span class="pre">Servo</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/uqtpy/comm/index.html">uqtpy.comm</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/uqtpy/comm/index.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/comm/ble/index.html">uqtpy.comm.ble</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/comm/ble/index.html#submodules">Submodules</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/comm/ble/constants/index.html">uqtpy.comm.ble.constants</a></li>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/comm/ble/service/index.html">uqtpy.comm.ble.service</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/comm/wifi/index.html">uqtpy.comm.wifi</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/comm/wifi/index.html#submodules">Submodules</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/comm/wifi/webserver/index.html">uqtpy.comm.wifi.webserver</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/uqtpy/comm/index.html#submodules">Submodules</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/comm/websocket/index.html">uqtpy.comm.websocket</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/comm/websocket/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/comm/websocket/index.html#uqtpy.comm.websocket.Client"><code class="docutils literal notranslate"><span class="pre">Client</span></code></a></li>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/comm/websocket/index.html#uqtpy.comm.websocket.Server"><code class="docutils literal notranslate"><span class="pre">Server</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/uqtpy/common/index.html">uqtpy.common</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/uqtpy/common/index.html#submodules">Submodules</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/common/device/index.html">uqtpy.common.device</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/common/device/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/common/device/index.html#uqtpy.common.device.QtUDevice"><code class="docutils literal notranslate"><span class="pre">QtUDevice</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/common/message/index.html">uqtpy.common.message</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/common/message/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/common/message/index.html#uqtpy.common.message.Generic"><code class="docutils literal notranslate"><span class="pre">Generic</span></code></a></li>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/common/message/index.html#uqtpy.common.message.Service"><code class="docutils literal notranslate"><span class="pre">Service</span></code></a></li>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/common/message/index.html#uqtpy.common.message.Module"><code class="docutils literal notranslate"><span class="pre">Module</span></code></a></li>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/common/message/index.html#uqtpy.common.message.mod"><code class="docutils literal notranslate"><span class="pre">mod</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/uqtpy/expander/index.html">uqtpy.expander</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/uqtpy/expander/index.html#submodules">Submodules</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/expander/io/index.html">uqtpy.expander.io</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/expander/io/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/expander/io/index.html#uqtpy.expander.io.GPIO"><code class="docutils literal notranslate"><span class="pre">GPIO</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/expander/motor/index.html">uqtpy.expander.motor</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/expander/motor/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/expander/motor/index.html#uqtpy.expander.motor.Motor"><code class="docutils literal notranslate"><span class="pre">Motor</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/uqtpy/helper/index.html">uqtpy.helper</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/uqtpy/helper/index.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/helper/adapter/index.html">uqtpy.helper.adapter</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/helper/adapter/index.html#submodules">Submodules</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/helper/adapter/module/index.html">uqtpy.helper.adapter.module</a></li>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/helper/adapter/service/index.html">uqtpy.helper.adapter.service</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/uqtpy/sensors/index.html">uqtpy.sensors</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/uqtpy/sensors/index.html#submodules">Submodules</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/apds/index.html">uqtpy.sensors.apds</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/apds/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/apds/index.html#uqtpy.sensors.apds.APDS"><code class="docutils literal notranslate"><span class="pre">APDS</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/gas/index.html">uqtpy.sensors.gas</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/gas/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/gas/index.html#uqtpy.sensors.gas.BaseMQ"><code class="docutils literal notranslate"><span class="pre">BaseMQ</span></code></a></li>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/gas/index.html#uqtpy.sensors.gas.MQ6Sensor"><code class="docutils literal notranslate"><span class="pre">MQ6Sensor</span></code></a></li>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/gas/index.html#uqtpy.sensors.gas.Gas"><code class="docutils literal notranslate"><span class="pre">Gas</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/ir/index.html">uqtpy.sensors.ir</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/ir/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/ir/index.html#uqtpy.sensors.ir.IR"><code class="docutils literal notranslate"><span class="pre">IR</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/joystick/index.html">uqtpy.sensors.joystick</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/joystick/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/joystick/index.html#uqtpy.sensors.joystick.JoyStick"><code class="docutils literal notranslate"><span class="pre">JoyStick</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/ldr/index.html">uqtpy.sensors.ldr</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/ldr/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/ldr/index.html#uqtpy.sensors.ldr.LDR"><code class="docutils literal notranslate"><span class="pre">LDR</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/limitswitch/index.html">uqtpy.sensors.limitswitch</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/limitswitch/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/limitswitch/index.html#uqtpy.sensors.limitswitch.LimitSwitch"><code class="docutils literal notranslate"><span class="pre">LimitSwitch</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/moisture/index.html">uqtpy.sensors.moisture</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/moisture/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/moisture/index.html#uqtpy.sensors.moisture.Moisture"><code class="docutils literal notranslate"><span class="pre">Moisture</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/mpu6050/index.html">uqtpy.sensors.mpu6050</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/mpu6050/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/mpu6050/index.html#uqtpy.sensors.mpu6050.MPU6050"><code class="docutils literal notranslate"><span class="pre">MPU6050</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/temperature/index.html">uqtpy.sensors.temperature</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/temperature/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/temperature/index.html#uqtpy.sensors.temperature.Temperature"><code class="docutils literal notranslate"><span class="pre">Temperature</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/tof/index.html">uqtpy.sensors.tof</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/tof/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/tof/index.html#uqtpy.sensors.tof.TOF"><code class="docutils literal notranslate"><span class="pre">TOF</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/sensors/ultrasonic/index.html">uqtpy.sensors.ultrasonic</a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/sensors/ultrasonic/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l8"><a class="reference internal" href="autoapi/uqtpy/sensors/ultrasonic/index.html#uqtpy.sensors.ultrasonic.UltraSonic"><code class="docutils literal notranslate"><span class="pre">UltraSonic</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="autoapi/uqtpy/index.html#submodules">Submodules</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/uqtpy/constants/index.html">uqtpy.constants</a><ul>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants"><code class="docutils literal notranslate"><span class="pre">QConstants</span></code></a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_MOTOR_EXPANDER"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_MOTOR_EXPANDER</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_GPIO_EXPANDER"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_GPIO_EXPANDER</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_ANALOG_INPUT"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_ANALOG_INPUT</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_DIGITAL_INPUT"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_DIGITAL_INPUT</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_DIGITAL_OUTPUT"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_DIGITAL_OUTPUT</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_PWM"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_PWM</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_SERVO"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_SERVO</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_NEOPIXEL_INIT"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_NEOPIXEL_INIT</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_NEOPIXEL_CONTROL"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_NEOPIXEL_CONTROL</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_NEOPIXEL_BEGIN"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_NEOPIXEL_BEGIN</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_NEOPIXEL_SHOW"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_NEOPIXEL_SHOW</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_NEOPIXEL_CLEAR"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_NEOPIXEL_CLEAR</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_TEMPERATURE_CMD"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_TEMPERATURE_CMD</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QConstants.QT_US_READ"><code class="docutils literal notranslate"><span class="pre">QConstants.QT_US_READ</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l6"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService"><code class="docutils literal notranslate"><span class="pre">QtService</span></code></a><ul>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_UUID"><code class="docutils literal notranslate"><span class="pre">QtService.QT_UUID</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_APDS_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_APDS_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_GAS_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_GAS_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_IR_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_IR_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_LDR_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_LDR_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_LIMITSWITCH_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_LIMITSWITCH_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_TEMPERATURE_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_TEMPERATURE_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_ULTRASONIC_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_ULTRASONIC_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_MPU6050_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_MPU6050_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_ARGB_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_ARGB_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_BUZZER_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_BUZZER_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_DISPLAY_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_DISPLAY_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_LED_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_LED_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_MOTOR_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_MOTOR_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_PUMP_MOTOR_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_PUMP_MOTOR_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_RGB_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_RGB_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_SERVO_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_SERVO_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_JOYSTICK_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_JOYSTICK_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_TOF_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_TOF_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.QT_MOISTURE_SERVICE"><code class="docutils literal notranslate"><span class="pre">QtService.QT_MOISTURE_SERVICE</span></code></a></li>
-<li class="toctree-l7"><a class="reference internal" href="autoapi/uqtpy/constants/index.html#uqtpy.constants.QtService.MODULE"><code class="docutils literal notranslate"><span class="pre">QtService.MODULE</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="autoapi/ports/index.html">ports</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="autoapi/ports/index.html#module-contents">Module Contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="autoapi/ports/index.html#ports.QtPort"><code class="docutils literal notranslate"><span class="pre">QtPort</span></code></a><ul>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/ports/index.html#ports.QtPort.getPortsCount"><code class="docutils literal notranslate"><span class="pre">QtPort.getPortsCount()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/ports/index.html#ports.QtPort.getRJPortsCount"><code class="docutils literal notranslate"><span class="pre">QtPort.getRJPortsCount()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/ports/index.html#ports.QtPort.getMotorPortsCount"><code class="docutils literal notranslate"><span class="pre">QtPort.getMotorPortsCount()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/ports/index.html#ports.QtPort.getUsbPortsCount"><code class="docutils literal notranslate"><span class="pre">QtPort.getUsbPortsCount()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/ports/index.html#ports.QtPort.getAnalogPin"><code class="docutils literal notranslate"><span class="pre">QtPort.getAnalogPin()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/ports/index.html#ports.QtPort.getDigitalPin"><code class="docutils literal notranslate"><span class="pre">QtPort.getDigitalPin()</span></code></a></li>
-<li class="toctree-l5"><a class="reference internal" href="autoapi/ports/index.html#ports.QtPort.getMotorPins"><code class="docutils literal notranslate"><span class="pre">QtPort.getMotorPins()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-</section>
-
-
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="autoapi/index.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2022, qtpi.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="docsSearchInput" class="search-input" placeholder="Search blocks or code..." autocomplete="off">
       </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+    </div>
 
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Block Categories</div>
+      <a href="#motors" class="nav-item active">
+        <span class="nav-dot dot-motors"></span>
+        <span>Motors & Pumps</span>
+      </a>
+      <a href="#servos" class="nav-item">
+        <span class="nav-dot dot-motors"></span>
+        <span>Servos</span>
+      </a>
+      <a href="#lights" class="nav-item">
+        <span class="nav-dot dot-lights"></span>
+        <span>Lights, Sound & Display</span>
+      </a>
+      <a href="#sensors" class="nav-item">
+        <span class="nav-dot dot-sensors"></span>
+        <span>Sensors</span>
+      </a>
+      <a href="#bluetooth" class="nav-item">
+        <span class="nav-dot dot-ble"></span>
+        <span>Bluetooth & Wireless</span>
+      </a>
+
+      <div class="nav-section-title">Hardware Guide</div>
+      <a href="#pinout" class="nav-item">
+        <span class="nav-dot dot-pinout"></span>
+        <span>QtPi Veda Pinout & Ports</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="docs-main">
+    <div class="docs-container">
+
+      <!-- Hero Banner -->
+      <section class="hero-banner">
+        <span class="hero-badge">Official Learning Guide</span>
+        <h1 class="hero-title">From Visual Blocks to Real MicroPython</h1>
+        <p class="hero-subtitle">
+          Learn how every visual block in QtBlockly turns into clean, real-world Python code running on your QtPi Veda board. Connect sensors, drive motors, and invent robots!
+        </p>
+      </section>
+
+      <!-- Motors & Pumps -->
+      <section id="motors" class="category-section">
+        <div class="section-header">
+          <div class="section-icon-badge badge-motors">⚡</div>
+          <h2 class="section-title">Motors & Pumps</h2>
+        </div>
+
+        <div class="cards-grid">
+          <!-- Card: Run Motor -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-motor">Motor Block</span>
+              <span class="hardware-port-tag">Port: M1 or M2</span>
+            </div>
+            <h3 class="card-title">Run Motor at Speed</h3>
+            <p class="card-description">
+              Spins the DC motor connected to port 1 (M1) or port 2 (M2) in Forward or Reverse with a speed percentage from 0% to 100%.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#0284c7; color:#fff;">Motor</span>
+              <span>Rotate M1 speed 100% direction Forward</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.actuators.motor <span class="token-kw">import</span> Motor
+
+<span class="token-comment"># Initialize motor on port 1 (M1)</span>
+motor1 = Motor(port=<span class="token-num">1</span>)
+
+<span class="token-comment"># Run motor forward at 100% speed</span>
+motor1.<span class="token-fn">speed</span>(value=<span class="token-num">100</span>, direction=<span class="token-num">1</span>)</code></pre>
+            </div>
+          </div>
+
+          <!-- Card: Stop Motor -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-motor">Motor Block</span>
+              <span class="hardware-port-tag">Port: M1 or M2</span>
+            </div>
+            <h3 class="card-title">Stop Motor</h3>
+            <p class="card-description">
+              Smoothly stops the motor by setting PWM output to zero and disabling H-bridge drive.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#0284c7; color:#fff;">Motor</span>
+              <span>Stop M1</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-comment"># Stop the motor immediately</span>
+motor1.<span class="token-fn">stop</span>()</code></pre>
+            </div>
+          </div>
+
+          <!-- Card: Water Pump Motor -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-motor">Pump Block</span>
+              <span class="hardware-port-tag">Port: P1 or P2</span>
+            </div>
+            <h3 class="card-title">Water Pump Motor</h3>
+            <p class="card-description">
+              Turns on the submersible water pump at the specified flow speed (0% to 100%). Ideal for automated plant watering systems.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#0369a1; color:#fff;">Pump</span>
+              <span>Run Pump P1 speed 80%</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.actuators.pumpmotor <span class="token-kw">import</span> PumpMotor
+
+pump = PumpMotor(port=<span class="token-num">1</span>)
+pump.<span class="token-fn">speed</span>(value=<span class="token-num">80</span>)  <span class="token-comment"># Run pump at 80%</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Servos -->
+      <section id="servos" class="category-section">
+        <div class="section-header">
+          <div class="section-icon-badge badge-motors">🦾</div>
+          <h2 class="section-title">Servo Motors</h2>
+        </div>
+
+        <div class="cards-grid">
+          <!-- Card: Rotate Servo -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-motor">Servo Block</span>
+              <span class="hardware-port-tag">RJ Port: 1–5</span>
+            </div>
+            <h3 class="card-title">Rotate Servo to Angle</h3>
+            <p class="card-description">
+              Positions the servo arm precisely at any angle between 0° and 180°. Perfect for robotic arms, steering, and grippers.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#0284c7; color:#fff;">Servo</span>
+              <span>Rotate servo on Port 1 to 90°</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.actuators.servo <span class="token-kw">import</span> Servo
+
+servo1 = Servo(port=<span class="token-num">1</span>)
+servo1.<span class="token-fn">rotate</span>(degree=<span class="token-num">90</span>)  <span class="token-comment"># Set to 90 degrees</span></code></pre>
+            </div>
+          </div>
+
+          <!-- Card: Servo Sweep -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-motor">Servo Block</span>
+              <span class="hardware-port-tag">RJ Port: 1–5</span>
+            </div>
+            <h3 class="card-title">Servo Sweep Motion</h3>
+            <p class="card-description">
+              Sweeps smoothly back and forth between a starting angle and stopping angle.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#0284c7; color:#fff;">Servo</span>
+              <span>Sweep servo Port 1 from 0° to 180°</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-comment"># Smooth sweep from 0 to 180 degrees</span>
+servo1.<span class="token-fn">sweep</span>(start_angle=<span class="token-num">0</span>, stop_angle=<span class="token-num">180</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lights, Sound & Display -->
+      <section id="lights" class="category-section">
+        <div class="section-header">
+          <div class="section-icon-badge badge-lights">💡</div>
+          <h2 class="section-title">Lights, Sound & Display</h2>
+        </div>
+
+        <div class="cards-grid">
+          <!-- Card: Buzzer -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-display">Buzzer Block</span>
+              <span class="hardware-port-tag">Built-in: GPIO 4</span>
+            </div>
+            <h3 class="card-title">Play Buzzer Tones</h3>
+            <p class="card-description">
+              Plays beeps, alarms, and musical notes using the on-board piezo buzzer or an external buzzer module.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#d97706; color:#fff;">Buzzer</span>
+              <span>Beep 1000 Hz for 200 ms</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.actuators.buzzer <span class="token-kw">import</span> Buzzer
+
+buzzer = Buzzer()  <span class="token-comment"># Uses onboard GPIO 4</span>
+buzzer.<span class="token-fn">beep</span>(freq=<span class="token-num">1000</span>, duration=<span class="token-num">200</span>)
+buzzer.<span class="token-fn">stop</span>()</code></pre>
+            </div>
+          </div>
+
+          <!-- Card: ARGB NeoPixels -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-display">ARGB Block</span>
+              <span class="hardware-port-tag">Built-in: GPIO 15</span>
+            </div>
+            <h3 class="card-title">Rainbow & Colored NeoPixels</h3>
+            <p class="card-description">
+              Controls the 4 addressable RGB LEDs on the QtPi Veda board. Set any color using Red, Green, and Blue values (0–255), or trigger animated rainbow effects.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#b45309; color:#fff;">ARGB</span>
+              <span>Set all LEDs to Red (255, 0, 0)</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.actuators.argb <span class="token-kw">import</span> ARGB
+
+argb = ARGB(pin=<span class="token-num">15</span>, num_leds=<span class="token-num">4</span>)
+argb.<span class="token-fn">fill</span>(<span class="token-num">255</span>, <span class="token-num">0</span>, <span class="token-num">0</span>)  <span class="token-comment"># Fill all red</span>
+argb.<span class="token-fn">rainbow</span>()       <span class="token-comment"># Play rainbow animation</span></code></pre>
+            </div>
+          </div>
+
+          <!-- Card: OLED Display -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-display">OLED Block</span>
+              <span class="hardware-port-tag">Port: I2C (SDA 21, SCL 22)</span>
+            </div>
+            <h3 class="card-title">OLED Screen Text & Graphics</h3>
+            <p class="card-description">
+              Displays text, sensor readings, and status messages on the 128x64 OLED display over the shared I2C bus.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#b45309; color:#fff;">OLED</span>
+              <span>Print "Hello QtPi!" at (0, 0)</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.actuators.oled <span class="token-kw">import</span> OLED
+
+display = OLED()
+display.<span class="token-fn">clear</span>()
+display.<span class="token-fn">text</span>(<span class="token-str">"Hello QtPi!"</span>, <span class="token-num">0</span>, <span class="token-num">0</span>)
+display.<span class="token-fn">show</span>()</code></pre>
+            </div>
+          </div>
+
+          <!-- Card: LED -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-display">LED Block</span>
+              <span class="hardware-port-tag">RJ Port: 1–5</span>
+            </div>
+            <h3 class="card-title">Single LED Indicator</h3>
+            <p class="card-description">
+              Turns an external single-color LED module ON, OFF, or toggles its state.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#d97706; color:#fff;">LED</span>
+              <span>Turn LED on Port 2 ON</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.actuators.led <span class="token-kw">import</span> LED
+
+led = LED(port=<span class="token-num">2</span>)
+led.<span class="token-fn">on</span>()
+led.<span class="token-fn">off</span>()</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sensors -->
+      <section id="sensors" class="category-section">
+        <div class="section-header">
+          <div class="section-icon-badge badge-sensors">📡</div>
+          <h2 class="section-title">Sensors</h2>
+        </div>
+
+        <div class="cards-grid">
+          <!-- Card: Ultrasonic -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-sensor">Ultrasonic Block</span>
+              <span class="hardware-port-tag">RJ Port: 1–5</span>
+            </div>
+            <h3 class="card-title">Ultrasonic Distance Sensor</h3>
+            <p class="card-description">
+              Measures distance to an obstacle in centimeters (cm) by sending sonic pulses and timing their echo. Range: 2 cm to 400 cm.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#059669; color:#fff;">Distance</span>
+              <span>Read distance in cm from Port 3</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.sensors.ultrasonic <span class="token-kw">import</span> Ultrasonic
+
+sonar = Ultrasonic(port=<span class="token-num">3</span>)
+distance_cm = sonar.<span class="token-fn">distance</span>()
+print(<span class="token-str">"Distance:"</span>, distance_cm)</code></pre>
+            </div>
+          </div>
+
+          <!-- Card: Infrared -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-sensor">Infrared Block</span>
+              <span class="hardware-port-tag">RJ Port: 1–5</span>
+            </div>
+            <h3 class="card-title">Infrared (IR) Obstacle & Line Sensor</h3>
+            <p class="card-description">
+              Detects nearby objects or lines on the ground for line-following robots. Returns 0 when an object is detected, or analog reflectivity values.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#059669; color:#fff;">IR Sensor</span>
+              <span>Is obstacle detected on Port 1?</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.sensors.ir <span class="token-kw">import</span> IR
+
+ir_sensor = IR(port=<span class="token-num">1</span>)
+<span class="token-comment"># Returns 0 when obstacle detected, 1 when clear</span>
+detected = (ir_sensor.<span class="token-fn">read_digital</span>() == <span class="token-num">0</span>)</code></pre>
+            </div>
+          </div>
+
+          <!-- Card: Light Sensor LDR -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-sensor">LDR Block</span>
+              <span class="hardware-port-tag">RJ Port: 1–5</span>
+            </div>
+            <h3 class="card-title">LDR Light Intensity Sensor</h3>
+            <p class="card-description">
+              Reads ambient light levels around your robot. Higher values indicate bright ambient lighting, while lower values mean darkness.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#059669; color:#fff;">Light</span>
+              <span>Read light level on Port 2</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.sensors.ldr <span class="token-kw">import</span> LDR
+
+light_sensor = LDR(port=<span class="token-num">2</span>)
+light_level = light_sensor.<span class="token-fn">read</span>()</code></pre>
+            </div>
+          </div>
+
+          <!-- Card: MPU6050 Gyro & Accelerometer -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-sensor">Gyro Block</span>
+              <span class="hardware-port-tag">Port: I2C (SDA 21, SCL 22)</span>
+            </div>
+            <h3 class="card-title">MPU6050 Motion & Gyroscope</h3>
+            <p class="card-description">
+              6-axis motion tracking sensor. Reads tilt, roll, pitch, and acceleration along X, Y, and Z axes for balance robots and gesture controls.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#059669; color:#fff;">MPU6050</span>
+              <span>Get Tilt / Acceleration X</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.sensors.mpu6050 <span class="token-kw">import</span> MPU6050
+
+mpu = MPU6050()
+accel = mpu.<span class="token-fn">get_accel</span>()  <span class="token-comment"># Returns {'x': ..., 'y': ..., 'z': ...}</span>
+x_accel = accel[<span class="token-str">'x'</span>]</code></pre>
+            </div>
+          </div>
+
+          <!-- Card: Soil Moisture & Temperature -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-sensor">Soil Block</span>
+              <span class="hardware-port-tag">RJ Port: 1–5</span>
+            </div>
+            <h3 class="card-title">Soil Moisture & Temperature</h3>
+            <p class="card-description">
+              Monitors moisture in soil and ambient temperature for smart agriculture and automated gardening projects.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#059669; color:#fff;">Moisture</span>
+              <span>Read moisture level from Port 4</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.sensors.moisture <span class="token-kw">import</span> Moisture
+
+moisture_sensor = Moisture(port=<span class="token-num">4</span>)
+moisture_val = moisture_sensor.<span class="token-fn">read</span>()</code></pre>
+            </div>
+          </div>
+
+          <!-- Card: Limit Switch -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-sensor">Switch Block</span>
+              <span class="hardware-port-tag">RJ Port: 1–5</span>
+            </div>
+            <h3 class="card-title">Mechanical Limit Switch</h3>
+            <p class="card-description">
+              Detects physical touch or collision. Perfect as a bumper sensor or homing switch for 3D printer and robotic axes.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#059669; color:#fff;">Switch</span>
+              <span>Is Switch on Port 5 pressed?</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.sensors.limitswitch <span class="token-kw">import</span> LimitSwitch
+
+switch = LimitSwitch(port=<span class="token-num">5</span>)
+<span class="token-kw">if</span> switch.<span class="token-fn">is_pressed</span>():
+    print(<span class="token-str">"Bumper hit!"</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bluetooth & Wireless -->
+      <section id="bluetooth" class="category-section">
+        <div class="section-header">
+          <div class="section-icon-badge badge-ble">📶</div>
+          <h2 class="section-title">Bluetooth & App Inventor Connection</h2>
+        </div>
+
+        <div class="cards-grid">
+          <!-- Card: QtBLE Service -->
+          <div class="block-card">
+            <div class="card-top">
+              <span class="block-badge-pill pill-ble">BLE Service</span>
+              <span class="hardware-port-tag">Built-in: ESP32 BLE</span>
+            </div>
+            <h3 class="card-title">QtBLE Wireless Smartphone Control</h3>
+            <p class="card-description">
+              Starts the standard QtPi Bluetooth Low Energy GATT service. Enables students to connect mobile apps created with MIT App Inventor / Code2Play to control motors and stream sensor telemetry in real time.
+            </p>
+            <div class="block-visual">
+              <span class="block-tag" style="background:#7c3aed; color:#fff;">Bluetooth</span>
+              <span>Start BLE Service as "QtPi_Bot"</span>
+            </div>
+            <div class="code-container">
+              <div class="code-header">
+                <span>MicroPython</span>
+                <button class="copy-btn" onclick="copySnippet(this)">Copy</button>
+              </div>
+              <pre><code><span class="token-kw">from</span> uqtpy.comm.ble.service <span class="token-kw">import</span> QtBLE
+
+ble = QtBLE()
+ble.<span class="token-fn">start</span>(name=<span class="token-str">"QtPi_Bot"</span>)  <span class="token-comment"># Advertises to App Inventor</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hardware Pinout & Ports -->
+      <section id="pinout" class="category-section">
+        <div class="section-header">
+          <div class="section-icon-badge badge-pinout">🔌</div>
+          <h2 class="section-title">QtPi Veda Board Pinout & Wiring Guide</h2>
+        </div>
+
+        <div class="pinout-card">
+          <h3 class="card-title" style="margin-bottom: 8px;">Veda ESP32 Port Invariants</h3>
+          <p class="card-description" style="margin-bottom: 16px;">
+            The QtPi Veda board provides color-coded, keyed RJ ports to make circuit assembly foolproof for students. No loose breadboard wires or short-circuit risks!
+          </p>
+
+          <table class="pinout-table">
+            <thead>
+              <tr>
+                <th>Port Name</th>
+                <th>Physical Connector</th>
+                <th>Digital Pin (ESP32)</th>
+                <th>Analog Pin (ADC)</th>
+                <th>Recommended Devices</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="port-badge">Port 1</span></td>
+                <td>RJ Port 1</td>
+                <td>GPIO 32</td>
+                <td>GPIO 34</td>
+                <td>Ultrasonic, IR, Servo, LED</td>
+              </tr>
+              <tr>
+                <td><span class="port-badge">Port 2</span></td>
+                <td>RJ Port 2</td>
+                <td>GPIO 33</td>
+                <td>GPIO 35</td>
+                <td>LDR Light Sensor, Servo</td>
+              </tr>
+              <tr>
+                <td><span class="port-badge">Port 3</span></td>
+                <td>RJ Port 3</td>
+                <td>GPIO 23</td>
+                <td>GPIO 25</td>
+                <td>Ultrasonic, IR, Limit Switch</td>
+              </tr>
+              <tr>
+                <td><span class="port-badge">Port 4</span></td>
+                <td>RJ Port 4</td>
+                <td>GPIO 12</td>
+                <td>GPIO 39</td>
+                <td>Soil Moisture, Temperature</td>
+              </tr>
+              <tr>
+                <td><span class="port-badge">Port 5</span></td>
+                <td>RJ Port 5</td>
+                <td>GPIO 27</td>
+                <td>GPIO 14</td>
+                <td>Limit Switch, IR, Buzzer</td>
+              </tr>
+              <tr>
+                <td><span class="port-badge" style="background:rgba(59,130,246,0.2); color:#60a5fa;">M1 & M2</span></td>
+                <td>Motor Terminals</td>
+                <td>IN1=5, IN2=13 (M1)<br>IN1=18, IN2=19 (M2)</td>
+                <td>PWM Scaled (0–100%)</td>
+                <td>DC Gearmotors (TB67H450FNG Driver)</td>
+              </tr>
+              <tr>
+                <td><span class="port-badge" style="background:rgba(251,191,36,0.2); color:#fbbf24;">I2C Bus</span></td>
+                <td>I2C Header / Port</td>
+                <td>SDA = GPIO 21<br>SCL = GPIO 22</td>
+                <td>Digital 400kHz</td>
+                <td>OLED Display, MPU6050, APDS9960</td>
+              </tr>
+              <tr>
+                <td><span class="port-badge" style="background:rgba(244,114,182,0.2); color:#f472b6;">Onboard</span></td>
+                <td>Internal Circuit</td>
+                <td>Buzzer = GPIO 4<br>ARGB = GPIO 15</td>
+                <td>Battery = GPIO 36</td>
+                <td>Built-in piezo and 4x NeoPixels</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Search Empty State -->
+      <div id="noResultsMessage" class="no-results">
+        <h3>No matching blocks found</h3>
+        <p>Try searching for words like "motor", "ultrasonic", "oled", "buzzer", or "ports".</p>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/docs.js"></script>
 </body>
 </html>
