@@ -171,10 +171,6 @@
 				<button id="btn_config" class="ui-button btn-nav" data-dialog-target="#configModal" title="Toolbox Config" data-tooltip="Toolbox Settings">
 					<span class="fa fa-cog"></span>
 				</button>
-				<button id="btn_api_mp" class="ui-button btn-nav" title="QtPi API Documentation" data-tooltip="MicroPython Documentation"
-					onclick="QtBlockPy.openExternalLink('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html', event)">
-					<span class="material-icons">menu_book</span>
-				</button>
 				<button id="btn_about" class="ui-button btn-nav" data-dialog-target="#aboutModal" title="About QtBlockly" data-tooltip="About QtBlockly">
 					<span class="material-icons">help_outline</span>
 				</button>
@@ -386,13 +382,13 @@
 									<span class="fa fa-globe"></span>
 									<span id="span_site">Website</span>
 								</button>
+								<button id="btn_about_docs" class="about-link-btn" onclick="QtBlockPy.openExternalLink('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html', event)" title="API Documentation">
+									<span class="fa fa-book"></span>
+									<span>API Documentation</span>
+								</button>
 								<button id="btn_contact" class="about-link-btn" onclick="QtBlockPy.openExternalLink('https://qtpi.in/#contact', event)" title="Contact QtPi">
 									<span class="fa fa-envelope-o"></span>
 									<span id="span_contact">Contact</span>
-								</button>
-								<button id="btn_about_docs" class="about-link-btn" onclick="QtBlockPy.openExternalLink('https://qtlearncodelab.github.io/qtpi-shared/docs/uqtpy/html/autoapi/index.html', event)" title="API Documentation">
-									<span class="fa fa-book"></span>
-									<span>API Docs</span>
 								</button>
 							</div>
 						</div>

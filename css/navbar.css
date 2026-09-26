@@ -225,14 +225,6 @@
   border-color: #a5b4fc;
 }
 
-#btn_api_mp .material-icons {
-  color: #0284c7; /* Ocean blue */
-}
-#btn_api_mp:hover {
-  background-color: #f0f9ff;
-  border-color: #7dd3fc;
-}
-
 #btn_about .material-icons {
   color: #0d9488; /* Teal */
 }
