@@ -1,0 +1,163 @@
+<xml xmlns="https://developers.google.com/blockly/xml">
+  <variables>
+    <variable id="var_motor1">motor_1</variable>
+    <variable id="var_motor2">motor_2</variable>
+  </variables>
+  <block type="variables_set" id="init_m1" x="80" y="60">
+    <field name="VAR" id="var_motor1">motor_1</field>
+    <value name="VALUE">
+      <block type="qtpi_motor_initialize" id="blk_init_m1">
+        <field name="port">1</field>
+        <field name="ob">True</field>
+      </block>
+    </value>
+    <next>
+      <block type="variables_set" id="init_m2">
+        <field name="VAR" id="var_motor2">motor_2</field>
+        <value name="VALUE">
+          <block type="qtpi_motor_initialize" id="blk_init_m2">
+            <field name="port">2</field>
+            <field name="ob">True</field>
+          </block>
+        </value>
+        <next>
+          <!-- Step 1: Run Both Motors FORWARD -->
+          <block type="qtpi_motor_rotate" id="fwd_m1">
+            <value name="motor_object">
+              <block type="variables_get" id="get_m1_fwd">
+                <field name="VAR" id="var_motor1">motor_1</field>
+              </block>
+            </value>
+            <value name="motor_speed">
+              <block type="math_number" id="spd_fwd_m1">
+                <field name="NUM">700</field>
+              </block>
+            </value>
+            <value name="motor_direction">
+              <block type="logic_boolean" id="dir_fwd_m1">
+                <field name="BOOL">TRUE</field>
+              </block>
+            </value>
+            <next>
+              <block type="qtpi_motor_rotate" id="fwd_m2">
+                <value name="motor_object">
+                  <block type="variables_get" id="get_m2_fwd">
+                    <field name="VAR" id="var_motor2">motor_2</field>
+                  </block>
+                </value>
+                <value name="motor_speed">
+                  <block type="math_number" id="spd_fwd_m2">
+                    <field name="NUM">700</field>
+                  </block>
+                </value>
+                <value name="motor_direction">
+                  <block type="logic_boolean" id="dir_fwd_m2">
+                    <field name="BOOL">TRUE</field>
+                  </block>
+                </value>
+                <next>
+                  <!-- Wait 3 seconds in Forward -->
+                  <block type="qtpi_neo_sleep" id="sleep_fwd">
+                    <value name="duration">
+                      <block type="math_number" id="dur_fwd">
+                        <field name="NUM">3</field>
+                      </block>
+                    </value>
+                    <next>
+                      <!-- Step 2: Run Both Motors REVERSE -->
+                      <block type="qtpi_motor_rotate" id="rev_m1">
+                        <value name="motor_object">
+                          <block type="variables_get" id="get_m1_rev">
+                            <field name="VAR" id="var_motor1">motor_1</field>
+                          </block>
+                        </value>
+                        <value name="motor_speed">
+                          <block type="math_number" id="spd_rev_m1">
+                            <field name="NUM">700</field>
+                          </block>
+                        </value>
+                        <value name="motor_direction">
+                          <block type="logic_boolean" id="dir_rev_m1">
+                            <field name="BOOL">FALSE</field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="qtpi_motor_rotate" id="rev_m2">
+                            <value name="motor_object">
+                              <block type="variables_get" id="get_m2_rev">
+                                <field name="VAR" id="var_motor2">motor_2</field>
+                              </block>
+                            </value>
+                            <value name="motor_speed">
+                              <block type="math_number" id="spd_rev_m2">
+                                <field name="NUM">700</field>
+                              </block>
+                            </value>
+                            <value name="motor_direction">
+                              <block type="logic_boolean" id="dir_rev_m2">
+                                <field name="BOOL">FALSE</field>
+                              </block>
+                            </value>
+                            <next>
+                              <!-- Wait 3 seconds in Reverse -->
+                              <block type="qtpi_neo_sleep" id="sleep_rev">
+                                <value name="duration">
+                                  <block type="math_number" id="dur_rev">
+                                    <field name="NUM">3</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <!-- Step 3: STOP Both Motors -->
+                                  <block type="qtpi_motor_rotate" id="stop_m1">
+                                    <value name="motor_object">
+                                      <block type="variables_get" id="get_m1_stop">
+                                        <field name="VAR" id="var_motor1">motor_1</field>
+                                      </block>
+                                    </value>
+                                    <value name="motor_speed">
+                                      <block type="math_number" id="spd_0_m1">
+                                        <field name="NUM">0</field>
+                                      </block>
+                                    </value>
+                                    <value name="motor_direction">
+                                      <block type="logic_boolean" id="dir_0_m1">
+                                        <field name="BOOL">FALSE</field>
+                                      </block>
+                                    </value>
+                                    <next>
+                                      <block type="qtpi_motor_rotate" id="stop_m2">
+                                        <value name="motor_object">
+                                          <block type="variables_get" id="get_m2_stop">
+                                            <field name="VAR" id="var_motor2">motor_2</field>
+                                          </block>
+                                        </value>
+                                        <value name="motor_speed">
+                                          <block type="math_number" id="spd_0_m2">
+                                            <field name="NUM">0</field>
+                                          </block>
+                                        </value>
+                                        <value name="motor_direction">
+                                          <block type="logic_boolean" id="dir_0_m2">
+                                            <field name="BOOL">FALSE</field>
+                                          </block>
+                                        </value>
+                                      </block>
+                                    </next>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </next>
+  </block>
+</xml>

@@ -5,5 +5,12 @@
         "link_url": "https://youtu.be/dKAvittxvw8",
         "link_text": "",
         "visible": true
-    }  
+    },
+    {
+        "source_url": "motors/motors_forward_reverse_stop.xml",
+        "source_text": "Dual Motors (Forward, Reverse, Stop)",
+        "link_url": "",
+        "link_text": "",
+        "visible": true
+    }
 ]
