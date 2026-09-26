@@ -9,7 +9,7 @@ var MSG = {
   btn_example: "Examples",
   btn_term: "Terminal",
   btn_factory: "Block factory",
-  btn_saveXML: "Save XML",
+  btn_saveXML: "Save",
   btn_print: "Screenshot",
   btn_preview_ino: "Python Code Preview",
   btn_preview_py: "Python Code Preview",
